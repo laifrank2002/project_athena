@@ -42,6 +42,6 @@ Viewport.prototype.setPosition = function(x,y)
 
 Viewport.prototype.resize = function(width,height)
 {
-	this.width = width;
-	this.height = height;
+	if(!isNaN(width)) this.width = width;
+	if(!isNaN(height)) this.height = height;
 }

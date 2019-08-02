@@ -64,6 +64,7 @@ var Engine = (
 				// initialize tabs before the main handler, always!
 				Inventory_handler.initialize();
 				Industry_handler.initialize();
+				Time_handler.initialize();
 				UIHandler.initialize();
 				// listeners
 				document.body.addEventListener("mousedown",Engine.handle_mousedown, false);

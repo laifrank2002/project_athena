@@ -58,7 +58,7 @@ UIElement.prototype.draw = function(context)
 	// we clip in order to prevent overlap onto other elements 
 	context.clip();
 	
-	if(this.paint) this.paint(context);
+	if(this.paint) this.paint(context,this.x,this.y);
 	
 	if(this.children)
 	{
@@ -177,7 +177,7 @@ UIElement.prototype.handle_mousedown = function(mouseX, mouseY)
 	{
 		this.onmousedown(mouseX,mouseY);
 	}
-	this.mousedown = new Point(mouseX, mouseY);;
+	this.mousedown = new Point(mouseX, mouseY);
 	return true;
 }
 
@@ -265,7 +265,7 @@ UIButton.prototype.draw = function(context)
 		this.draw_convex_indents(context);
 	}
 	
-	if(this.paint)this.paint(context);
+	if(this.paint)this.paint(context,this.x,this.y);
 	
 	// draw text and center
 	var textMetric = context.measureText(this.text);
@@ -718,8 +718,49 @@ UIScrollBarComponentBar.prototype.draw = function(context)
 		this.parent.performMouseScroll();
 	}
 }
+/**
+	Craziest component so far. 
+	We've had scrolling, we had buttons'n'text.
+	Now it's time for some freakin WINDOWS!
+	It's actually crazy simple, to be honest.
+	Prelude to draggable windows.
+ */
+/*
+function UIWindow(x,y,width,height)
+{
+	UIElement.call(this,x,y,width,height);
+	this.title_bar = new UIElement(null,null,this.width,UIWindow.prototype.TITLE_BAR_HEIGHT);
+	UIElement.prototype.addSubElement.call(this,this.title_bar,this.x,this.y);
+	this.title_bar.onmouseclick = function(){console.log("hello")};
+	this.content_bar = new UIElement(null,null,this.width,this.height - UIWindow.prototype.TITLE_BAR_HEIGHT);
+	UIElement.prototype.addSubElement.call(this,this.content_bar,this.x,this.y+UIWindow.prototype.TITLE_BAR_HEIGHT);
+	
+}
+
+UIWindow.prototype = Object.create(UIElement.prototype);
+Object.defineProperty(UIWindow.prototype, 'constructor', {
+	value: UIWindow,
+	enumerable: false, // so that it does not appear in 'for in' loop
+    writable: true });
+
+UIWindow.prototype.TITLE_BAR_HEIGHT = 25;
+
+UIWindow.prototype.addSubElement = function(element,x=0,y=0)
+{
+	this.content_panel.addSubElement(element,x,y);
+}	
 
 
+function UITitleBar()
+{
+	
+}
+
+UITitleBar.prototype.attach = function(parent)
+{
+	
+}
+*/
 // UI Drawer, which handles away all the common features to be drawn in terms of UI
 // this helps simplify the amount of 'context.lineTo()'s that we'll have to do
 var UIDrawer = (

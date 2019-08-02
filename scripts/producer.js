@@ -28,6 +28,8 @@ Producer.prototype.types = {
 		height: 1,
 		image: "spinster",
 		animation_frames: ["spinster1","spinster2"],
+		price: 10,
+		upkeep: 2,
 	},
 }
 
