@@ -51,6 +51,9 @@ var Engine = (
 				context = canvas.getContext("2d");
 				canvasBoundingRectangle = canvas.getBoundingClientRect();
 				
+				// set up canvas defaults 
+				context.imageSmoothingEnabled = false;
+				
 				// settings 
 				settings["notification"] = {};
 				settings["notification"]["notify"] = true;

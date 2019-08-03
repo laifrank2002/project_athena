@@ -2,6 +2,8 @@
 	****UI Element Documentation****
 	function UIElement(x,y,width,height,type = "generic",onmouseclick = null)
 	
+	function UIWindow(x,y,width,height,menuButton = false)
+	
 	function UIPanel (x,y,width,height)
 	function UITabbedPanel (x,y,width,height)
 	function UIScrollPanel (x,y,width,height,max_height)
@@ -138,25 +140,37 @@ UIElement.prototype.isInBounds = function(x,y)
 
 /**
 	EVERYTHING moves
+	Sets ABSOLUTELY
  */
-UIElement.prototype.move = function(x,y)
+UIElement.prototype.setPosition = function(x,y)
 {
 	this.x = x;
 	this.y = y;
+	
+	if(this.parent)
+	{
+		this.relative_x += x - this.x;
+		this.relative_y += y - this.y;
+	}
 	
 	if(this.children)
 	{
 		this.children.forEach(child =>
 			{
-				child.move(x + child.relative_x,y + child.relative_y);
+				child.setPosition(x + child.relative_x,y + child.relative_y);
 			});
 	}
 }
-
+/*
+UIElement.prototype.move = function(x,y)
+{
+	
+}
+*/
 UIElement.prototype.resize = function(width,height)
 {
-	this.width = width;
-	this.height = height;
+	if(width >= 0) this.width = width;
+	if(height >= 0) this.height = height;
 }
 
 UIElement.prototype.handle_mousedown = function(mouseX, mouseY)
@@ -205,9 +219,9 @@ UIElement.prototype.handle_mouseup = function(mouseX, mouseY)
 UIElement.prototype.addSubElement = function(element, x=0, y=0)
 {
 	element.parent = this;
+	element.setPosition(element.parent.x + x, element.parent.y + y);
 	element.relative_x = x;
 	element.relative_y = y;
-	element.move(element.parent.x + x, element.parent.y + y);
 	this.children.push(element);
 }
 
@@ -268,8 +282,8 @@ UIButton.prototype.draw = function(context)
 	if(this.paint)this.paint(context,this.x,this.y);
 	
 	// draw text and center
-	var textMetric = context.measureText(this.text);
 	context.font = this.font_size + "px " + this.font;
+	var textMetric = context.measureText(this.text);
 	context.fillStyle = this.font_colour;
 	context.fillText(this.text,this.x + (this.width - textMetric.width)/2,this.y + (this.height + this.font_size)/2);
 }	
@@ -294,8 +308,8 @@ UILabel.prototype.draw = function(context)
 {
 	if(this.hidden) return false;
 	
-	var textMetric = context.measureText(this.text);
 	context.font = this.font_size + "px " + this.font;
+	var textMetric = context.measureText(this.text);
 	context.fillStyle = this.font_colour;
 
 	switch(this.text_align)
@@ -321,9 +335,17 @@ function UIImage (width,height,source)
 {
 	UIElement.call(this,null,null,width,height,"image");
 	
-	this.image = new Image();
-	this.image.onload = function(){this.image_loaded = true;};
-	this.image.src = source;
+	if(typeof source === "object")
+	{
+		this.image = source;
+		source.image_loaded = true;
+	}
+	else
+	{
+		this.image = new Image();
+		this.image.onload = function(){this.image_loaded = true;};
+		this.image.src = source;
+	}
 }
 
 UIImage.prototype = Object.create(UIElement.prototype);
@@ -334,6 +356,7 @@ Object.defineProperty(UIImage.prototype, 'constructor', {
 	
 UIImage.prototype.draw = function(context)
 {
+	if(this.hidden) return false;
 	// check if loaded first.
 	if (this.image.image_loaded)
 	{
@@ -424,10 +447,10 @@ UITabbedPanel.prototype.addSubPanel = function(name,panel)
 		});
 	this.tab_bar.addSubElement(tabButton
 		,this.x + previousButtonCount * this.TAB_WIDTH
-		,this.y);
-	
+		,0);
+		
 	// add it to the content pane 
-	panel.move(this.content_panel.x, this.content_panel.y);
+	panel.setPosition(this.content_panel.x, this.content_panel.y);
 	panel.resize(this.content_panel.width, this.content_panel.height);
 	this.content_panel.addSubElement(panel);
 	
@@ -471,11 +494,11 @@ Object.defineProperty(UIScrollPanel.prototype, 'constructor', {
 UIScrollPanel.prototype.SCROLL_WIDTH = 25;
 UIScrollPanel.prototype.SCROLL_COLOUR = '#ffffff';
 
-UIScrollPanel.prototype.move = function(x,y)
+UIScrollPanel.prototype.setPosition = function(x,y)
 {
 	this.x = x;
 	this.y = y;
-	this.content_panel.move(x,y);
+	this.content_panel.setPosition(x,y);
 	this.scroll_bar.attach(this);
 }
 
@@ -516,7 +539,7 @@ UIScrollPanel.prototype.moveToScroll = function()
 	// in order to get the child ABSOLUTE
 	// of course, we are going to be using the CONTENT panel's children 
 	// then we can factor in SCROLL
-	this.content_panel.children.forEach(child => child.move(child.relative_x + this.x
+	this.content_panel.children.forEach(child => child.setPosition(child.relative_x + this.x
 		,child.relative_y + this.y - scroll * (this.max_height - this.height)));
 }
 
@@ -550,6 +573,7 @@ UIScrollBar.prototype.default_colour = UIScrollPanel.prototype.SCROLL_COLOUR;
 
 UIScrollBar.prototype.draw = function(context)
 {
+	if(this.hidden) return false;
 	UIElement.prototype.draw.call(this,context);
 	this.scrollComponent.draw_borders(context);
 }
@@ -560,12 +584,12 @@ UIScrollBar.prototype.attach = function(panel)
 	
 	this.x = this.parent.x + this.parent.width - this.SCROLL_WIDTH;
 	this.y = this.parent.y;
+		
 	this.width = this.SCROLL_WIDTH;
 	this.height = this.parent.height;
-
 	// change children 
-	this.topButton.move(this.x,this.y);
-	this.bottomButton.move(this.x,this.y + this.height - this.SCROLL_WIDTH);
+	this.topButton.setPosition(this.x,this.y);
+	this.bottomButton.setPosition(this.x,this.y + this.height - this.SCROLL_WIDTH);
 	this.scrollComponent.attach(this);	
 
 }
@@ -630,9 +654,10 @@ UIScrollBarComponent.prototype.attach = function(scrollBar)
 	this.x = scrollBar.x;
 	this.y = scrollBar.y + scrollBar.SCROLL_WIDTH;
 	this.width = scrollBar.SCROLL_WIDTH;
+		
 	// minus twice, once for top and once for bottom 
-	this.height = scrollBar.height - scrollBar.SCROLL_WIDTH - scrollBar.SCROLL_WIDTH
-	
+	this.height = scrollBar.height - 2 * scrollBar.SCROLL_WIDTH;
+
 	var panel = this.parent.parent;
 	if(panel)
 	{
@@ -708,6 +733,7 @@ UIScrollBarComponentBar.prototype.moveToScroll = function()
 // going to cheat a little here, if mousedown then we'll also modify the y position
 UIScrollBarComponentBar.prototype.draw = function(context)
 {
+	if(this.hidden) return false;
 	UIElement.prototype.draw.call(this,context);
 	if(this.mousedown)
 	{
@@ -724,16 +750,31 @@ UIScrollBarComponentBar.prototype.draw = function(context)
 	Now it's time for some freakin WINDOWS!
 	It's actually crazy simple, to be honest.
 	Prelude to draggable windows.
+	
+	Only SIMULATES Windows UI, is NOT a JFRAME except in look.
+	
+	TITLE BAR 
+		MENU BUTTONS
+	MENU BAR
+	TOOL BAR 
+	
+	STATUS BAR 
  */
-/*
-function UIWindow(x,y,width,height)
+
+function UIWindow(x,y,width,height,menuButton = false)
 {
-	UIElement.call(this,x,y,width,height);
-	this.title_bar = new UIElement(null,null,this.width,UIWindow.prototype.TITLE_BAR_HEIGHT);
-	UIElement.prototype.addSubElement.call(this,this.title_bar,this.x,this.y);
-	this.title_bar.onmouseclick = function(){console.log("hello")};
-	this.content_bar = new UIElement(null,null,this.width,this.height - UIWindow.prototype.TITLE_BAR_HEIGHT);
-	UIElement.prototype.addSubElement.call(this,this.content_bar,this.x,this.y+UIWindow.prototype.TITLE_BAR_HEIGHT);
+	
+	UIElement.call(this,x,y,width,height,"window");
+	// title
+	this.title_bar = new UITitleBar(menuButton);
+	UIElement.prototype.addSubElement.call(this,this.title_bar,0,0);
+	this.title_bar.attach(this);
+	
+	// content
+	this.content_panel = new UIPanel(null,null,this.width,this.height - UIWindow.prototype.TITLE_BAR_HEIGHT);
+	UIElement.prototype.addSubElement.call(this,this.content_panel,0,UIWindow.prototype.TITLE_BAR_HEIGHT);
+	
+	// optional elements 
 	
 }
 
@@ -750,17 +791,151 @@ UIWindow.prototype.addSubElement = function(element,x=0,y=0)
 	this.content_panel.addSubElement(element,x,y);
 }	
 
-
-function UITitleBar()
+/**
+	MENUBUTTONS
+		QUIT (That's basically it)
+ */
+function UITitleBar(menuButton = false)
 {
+	UIElement.call(this,0,0,0,0,"title_bar");
+	this.attached = null;
 	
+	if(menuButton)
+	{
+		this.quit_button = new UIButton(25,25,"");
+		this.quit_button.paint = function(context,x,y)
+		{
+			context.beginPath();
+			context.moveTo(x+9,y+5);
+			context.lineTo(x+5,y+9);
+			context.lineTo(x+9,y+13);
+			context.lineTo(x+5,y+17);
+			context.lineTo(x+9,y+21);
+			context.lineTo(x+13,y+17);
+			context.lineTo(x+17,y+21);
+			context.lineTo(x+21,y+17);
+			context.lineTo(x+17,y+13);
+			context.lineTo(x+21,y+9);
+			context.lineTo(x+17,y+5);
+			context.lineTo(x+13,y+9);
+			context.closePath();
+			context.fill();
+			context.stroke();
+		}
+		this.addSubElement(this.quit_button, this.width - this.quit_button.width, 0);
+	}
 }
 
+UITitleBar.prototype = Object.create(UIElement.prototype);
+Object.defineProperty(UITitleBar.prototype, 'constructor', {
+	value: UITitleBar,
+	enumerable: false, // so that it does not appear in 'for in' loop
+    writable: true });
+
+UITitleBar.prototype.HEIGHT = UIWindow.prototype.TITLE_BAR_HEIGHT;	
+
+UITitleBar.prototype.draw = function(context)
+{
+	if(this.hidden) return false;
+	
+	UIElement.prototype.draw.call(this,context);
+	this.draw_borders(context);
+}
+	
 UITitleBar.prototype.attach = function(parent)
 {
-	
+	this.resize(parent.width,this.HEIGHT);	
+	if(this.quit_button)
+	{
+		this.quit_button.setPosition(this.x + this.width - this.quit_button.width,this.y);
+		this.quit_button.onmouseclick = () => {this.parent.hide()};
+	}
 }
-*/
+
+/**
+	A label with more control over thy text.
+	Text align is left.
+	No, it's not editable yet.
+ */
+function UITextArea(width,height,text)
+{
+	UIElement.call(this,null,null,width,height,"textarea");
+	
+	this.text = text;
+	this.text_lines = [];
+	
+	this.rasterized = false;
+	
+	this.line_spacing = 1;
+}
+
+UITextArea.prototype = Object.create(UIElement.prototype);
+Object.defineProperty(UITextArea.prototype, 'constructor', {
+	value: UITextArea,
+	enumerable: false, // so that it does not appear in 'for in' loop
+    writable: true });
+	
+UITextArea.prototype.draw = function(context)
+{
+	if(this.hidden) return false;
+	context.save();
+	
+	context.font = this.font_size + "px " + this.font;
+	var textMetric = context.measureText(this.text);
+	context.fillStyle = this.font_colour;
+	
+	context.rect(this.x,this.y,this.width,this.height);
+	context.clip();
+	
+	if(!this.rasterized)
+	{
+		this.rasterizeText(context);
+	}
+	
+	for(var index = 0, length = this.text_lines.length; index < length; index++)
+	{
+		context.fillText(this.text_lines[index],this.x,this.y + this.font_size + (index * (this.font_size + this.line_spacing)));
+	}
+	context.restore();
+}
+
+UITextArea.prototype.rasterizeText = function(context)
+{
+	if(!this.text)
+	{
+		Engine.log("UI Text Area: Unable to rasterize text, text not in valid form.");
+		return false;
+	}
+	// tokenize text, convert to words
+	var words = this.text.split(" ");
+	
+	var line = "";
+	while(words.length !== 0)
+	{
+		var word = words.shift();
+		var clear_space = /\n/gi;
+		if(context.measureText(line).width + context.measureText(word).width > this.width || word.indexOf("\n") >= 0)
+		{
+			this.text_lines.push(line);
+			line = "";
+		}
+		
+		line = line.concat(word.trim()," ");
+	}
+	if(line !== "")
+	{
+		this.text_lines.push(line);
+	}
+	this.rasterized = true;
+}
+
+UITextArea.prototype.resize = function(width,height)
+{
+	UIElement.prototype.resize.call(this,width,height);
+	this.text_lines = [];
+	this.rasterized = false;
+}
+
 // UI Drawer, which handles away all the common features to be drawn in terms of UI
 // this helps simplify the amount of 'context.lineTo()'s that we'll have to do
 var UIDrawer = (

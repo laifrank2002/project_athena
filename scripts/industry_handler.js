@@ -147,6 +147,7 @@ var Industry_handler = (
 			 */
 			handle_mouseclick: function(mouseX, mouseY)
 			{
+				console.log(`${mouseX},${mouseY}`);
 				var x = panel.x;
 				var y = panel.y + 25;
 				
