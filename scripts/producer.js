@@ -3,17 +3,16 @@
  */
 function Producer(type_key)
 {
-	if(this.types[type_key])
-	{
-		var type = this.types[type_key];
-		MapObject.call(this,type.width,type.height);
-		this.image = Engine.assets[type.image];
-	}
-	else 
+	if(!this.types[type_key])
 	{
 		Engine.log(`Producer: there is no such producer ${type_key}.`);
 		MapObject.call(this,1,1);
 	}
+	
+	MapObject.call(this,this.types[type_key].width,this.types[type_key].height);
+	this.type = this.types[type_key];
+	this.image = Engine.assets[this.type.image];
+	this.production_option = 0;
 }
 
 Producer.prototype = Object.create(MapObject.prototype);
@@ -28,7 +27,13 @@ Producer.prototype.types = {
 		height: 1,
 		image: "spinster",
 		animation_frames: ["spinster1","spinster2"],
-		
+		// different options of production
+		production: [
+			{name: "Cotton -> Thread"
+			,rate: 1.1
+			,input: {"cotton":1}
+			,output: {"thread":2}},
+		],
 		price: 18,
 		upkeep: 18,
 		type: "human",
@@ -55,7 +60,33 @@ Producer.prototype.draw = function(context,x,y)
 	}
 }
 
+/**
+	TODO
+	DEPRECATE BY CENTRALIZING BY CATEGORIES
+ */
 Producer.prototype.tick = function()
 {
+	// production
+	var production = this.type.production[this.production_option];
+	var rate = production.rate;
 	
+	// limit rate based on availible inputs
+	var limited_throughput_rate = 1.0;
+	for(key in production.input)
+	{
+		limited_throughput_rate = Math.min(limited_throughput_rate,Inventory.get_item(key).count / (production.input[key] * rate));
+	}
+	rate = rate * limited_throughput_rate;
+	
+	// now start subtracting
+	for(key in production.input)
+	{
+		Inventory.subtract_amount(key,production.input[key] * rate);
+	}
+	
+	// and then producing!
+	for(key in production.output)
+	{
+		Inventory.add_amount(key,production.output[key] * rate);
+	}
 }

@@ -34,9 +34,21 @@ var Inventory = (
 			{
 				if(amount < 0) return false;
 				
-				if(Inventory.subtract_amount(name, amount))
+				// sell up to.
+				var item_amount = Inventory.get_item(name).count;
+				if(item_amount < amount)
 				{
-					State_manager.add_state("player","money",price * amount);
+					if(Inventory.subtract_amount(name, item_amount))
+					{
+						State_manager.add_state("player","money",price * item_amount);
+					}
+				}
+				else 
+				{
+					if(Inventory.subtract_amount(name, amount))
+					{
+						State_manager.add_state("player","money",price * amount);
+					}
 				}
 			},
 			
@@ -92,6 +104,18 @@ var Inventory = (
 					return false;
 				}
 			},
+			
+			get_item: function(key)
+			{
+				if(inventory[key])
+				{
+					return inventory[key];
+				}
+				else 
+				{
+					Engine.log("Get Item: item " + key + " doesn't exist.");
+				}
+			}
 		}
 	}
 )();

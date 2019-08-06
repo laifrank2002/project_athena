@@ -37,6 +37,7 @@ var State_manager = (
 			{
 				/* takes the categories and initializes them */
 				data["player"] = {};
+				data["factory"] = {}; // TODO, shift to factory
 				data["world"] = {};
 				
 				// temp until saving and loading is figured out 

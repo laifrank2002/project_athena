@@ -54,6 +54,7 @@ var Inventory_handler = (
 				panel.addSubElement(display, 0, last_y + last_height);
 				
 				var buyTextField = new UITextField(150,25);
+				buyTextField.setText("0");
 				display.addSubElement(buyTextField,600,10);
 				
 				var buyButton = new UIButton(75,25,"Buy");
@@ -73,6 +74,7 @@ var Inventory_handler = (
 				display.addSubElement(buyButton,500,10);
 				
 				var sellTextField = new UITextField(150,25);
+				sellTextField.setText("0");
 				display.addSubElement(sellTextField,600,60);
 				
 				var sellButton = new UIButton(75,25,"Sell");

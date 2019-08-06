@@ -140,8 +140,10 @@ var Engine = (
 				window.requestAnimationFrame(Engine.draw);
 			},
 			
-			// unused
-			tick: function(lapse){},
+			tick: function(lapse)
+			{
+				Time_handler.tick(lapse);
+			},
 			
 			handle_mousedown: function(event)
 			{
