@@ -46,7 +46,7 @@ var State_manager = (
 			// if there are no previous saves, population data with defaults.
 			start_new_game: function()
 			{
-				data["player"] = {money: 0};
+				data["player"] = {money: 48000};
 				data["world"] = {time: 0};
 			},
 			

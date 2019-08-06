@@ -147,7 +147,6 @@ var Industry_handler = (
 			 */
 			handle_mouseclick: function(mouseX, mouseY)
 			{
-				console.log(`${mouseX},${mouseY}`);
 				var x = panel.x;
 				var y = panel.y + 25;
 				
@@ -169,6 +168,8 @@ var Industry_handler = (
 						
 						if(!isNaN(currently_selected) && currently_selected !== null)
 						{
+							// third check that last mouse down was on the same grid 
+							Engine.log(panel.mousedown);
 							Industry_handler.buy_and_plop(palette_list[currently_selected],grid_x,grid_y);
 							Industry_handler.deselect_palette();
 						}

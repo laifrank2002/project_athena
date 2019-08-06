@@ -19,7 +19,7 @@ var UIHandler = (
 				var introduction = new UIWindow(100,100,600,400,true);
 				introduction.addSubElement(new UIImage(128,256,Engine.assets["uncle_moneybags_portrait"]),10,10);
 				var text = `To My Most Gracious Nephew, \n \nHow goes your health? I trust that you are doing well. \n \nIf you are reading this letter, it means that unfortunately, I am no longer with you in this world. Do not be saddened by my departure. Instead, think of this as an opportunity. \n \nYou were kind to me in my waning years, and in my many years of life I have acquired many things which I had no use for. Consider then this a debt repaid. \n \nIt is for you to do with as you please, a brand new mill that has gone up with everything it needs except a manager. Go on then, and make your uncle proud. \n \nSir Horace Cecil Anthony Moneybags Sr. KBE`;
-				var introduction_textbox = new UITextArea(440,350,text);
+				var introduction_textbox = new UITextArea(440,310,text);
 				introduction_textbox.line_spacing = 4;
 				introduction.addSubElement(introduction_textbox,150,10)
 				var introduction_button = new UIButton(200,30,"Alea Iacta Est");
@@ -33,13 +33,15 @@ var UIHandler = (
 				
 				var content = new UITabbedPanel(0,0,800,575);
 				main.addSubElement(content,0,0);
-								
+				// tabs 				
 				content.addSubPanel("Factory",Industry_handler.panel);
 				content.addSubPanel("Warehouse",Inventory_handler.panel);
+				content.addSubPanel("Reports",Reports_handler.panel);
 				
 				var settings_tab = new UIPanel();
 				content.addSubPanel("Settings",settings_tab);
 				
+				// info display 
 				var info_display = new UIPanel(0,0,300,25);
 				
 				var money_display = new UILabel(`${Currency_converter.displayFull(State_manager.get_state("player","money"))}`,"left");
@@ -91,7 +93,7 @@ var UIHandler = (
 				var time_display = new UILabel(`Day: ${State_manager.get_state("world","time")}`,"left")
 				info_display.addSubElement(time_display,175+5,5);
 				
-				content.addSubElement(info_display,500,0);
+				content.tab_bar.addSubElement(info_display,500,0);
 				
 				content.hideAllTabs();
 				
@@ -139,6 +141,27 @@ var UIHandler = (
 				}
 			},
 			
+			handle_keydown: function(character)
+			{
+				for(uielement in ui)
+				{
+					if(ui[uielement].handle_keydown(character))
+					{
+						return true;
+					}
+				}
+			},
+			
+			handle_keyup: function(character)
+			{
+				for(uielement in ui)
+				{
+					if(ui[uielement].handle_keyup(character))
+					{
+						
+					}
+				}
+			},
 		}
 	}
 )();

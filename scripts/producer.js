@@ -28,9 +28,12 @@ Producer.prototype.types = {
 		height: 1,
 		image: "spinster",
 		animation_frames: ["spinster1","spinster2"],
-		price: 10,
-		upkeep: 2,
+		
+		price: 18,
+		upkeep: 18,
+		type: "human",
 	},
+	// weaver: 0.67 cloth per day
 }
 
 Producer.prototype.ANIMATION_COOLDOWN = 1000;

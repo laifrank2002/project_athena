@@ -44,7 +44,7 @@ var Currency_converter = {
 		
 		var pounds = Math.floor(amount_in_pence / (Currency_converter.POUNDS_TO_PENCE));
 		var shillings = Math.floor((amount_in_pence - pounds * Currency_converter.POUNDS_TO_PENCE) / Currency_converter.SHILLINGS_TO_PENCE);
-		var pence = (amount_in_pence % (Currency_converter.POUNDS_TO_PENCE)) % Currency_converter.SHILLINGS_TO_PENCE;
+		var pence = Math.round((amount_in_pence % (Currency_converter.POUNDS_TO_PENCE)) % Currency_converter.SHILLINGS_TO_PENCE);
 		
 		return `${Currency_converter.POUND_SIGN}${pounds} ${shillings}s ${pence}d`; 
 	},

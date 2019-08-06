@@ -53,6 +53,42 @@ var Inventory_handler = (
 				display.addSubElement(stock,10,70);
 				panel.addSubElement(display, 0, last_y + last_height);
 				
+				var buyTextField = new UITextField(150,25);
+				display.addSubElement(buyTextField,600,10);
+				
+				var buyButton = new UIButton(75,25,"Buy");
+				// TODO, decompose into a separate method 
+				// Check if IS valid number from text
+				buyButton.onmouseclick = () =>
+				{
+					var text = buyTextField.getText();
+					// we try to parse num ONLY if it is valid.
+					// Number is a good choice here as it fails is there is string characters in text
+					var number = Number(text);
+					if(!isNaN(number))
+					{
+						Inventory_handler.buy_item(item.key, number, item.market_value);
+					}
+				}
+				display.addSubElement(buyButton,500,10);
+				
+				var sellTextField = new UITextField(150,25);
+				display.addSubElement(sellTextField,600,60);
+				
+				var sellButton = new UIButton(75,25,"Sell");
+				sellButton.onmouseclick = () =>
+				{
+					var text = sellTextField.getText();
+					// we try to parse num ONLY if it is valid.
+					// Number is a good choice here as it fails is there is string characters in text
+					var number = Number(text);
+					if(!isNaN(number))
+					{
+						Inventory_handler.sell_item(item.key, number, item.market_value);
+					}
+				}
+				display.addSubElement(sellButton,500,60);
+				
 				displays.push({display: display
 					,item: item
 					,average_price:average_price
@@ -68,6 +104,17 @@ var Inventory_handler = (
 						display.stock.setText(`Stock: ${display.item.count.toLocaleString()} units`);
 					}
 				);
+			},
+			
+			// temporary for modal 
+			buy_item: function(name, amount, price)
+			{
+				Inventory.buy_item(name, amount, price);
+			},
+			
+			sell_item: function(name, amount, price)
+			{
+				Inventory.sell_item(name, amount, price);	
 			},
 		}
 	}

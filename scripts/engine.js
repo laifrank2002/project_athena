@@ -51,9 +51,8 @@ var Engine = (
 				context = canvas.getContext("2d");
 				canvasBoundingRectangle = canvas.getBoundingClientRect();
 				
-				// set up canvas defaults 
+				// init canvas 
 				context.imageSmoothingEnabled = false;
-				
 				// settings 
 				settings["notification"] = {};
 				settings["notification"]["notify"] = true;
@@ -67,6 +66,8 @@ var Engine = (
 				// initialize tabs before the main handler, always!
 				Inventory_handler.initialize();
 				Industry_handler.initialize();
+				Reports_handler.initialize();
+				
 				Time_handler.initialize();
 				UIHandler.initialize();
 				// listeners
@@ -169,6 +170,12 @@ var Engine = (
 			
 			handle_keydown: function(keyevent)
 			{
+				var key = keyevent.key;
+				if(key.length === 1 || key === "Backspace")
+				{
+					UIHandler.handle_keydown(key);
+				}
+				// TODO, rehaul from keyevent.keyCode to keyevent.code
 				switch(keyevent.keyCode)
 				{
 					case 37:
@@ -192,6 +199,12 @@ var Engine = (
 			
 			handle_keyup: function(keyevent)
 			{
+				var key = keyevent.key;
+				if(key.length === 1)
+				{
+					UIHandler.handle_keyup(key);
+				}
+				// TODO, rehaul from keyevent.keyCode to keyevent.code
 				switch(keyevent.keyCode)
 				{
 					case 37:

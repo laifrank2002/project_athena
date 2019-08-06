@@ -10,7 +10,10 @@
 	
 	function UIButton (width,height,text,onmouseclick)
 	function UILabel (text, align = "center")
-	function UIImage (width,height,source)
+	function UIImage (width,height,source,image_smoothing = false)
+	function UITextField(width,height,validate)
+	function UITextArea(width,height,text)
+	
 	
  */
 /** 
@@ -35,6 +38,7 @@ function UIElement(x,y,width,height,type = "generic",onmouseclick = null)
 	this.children = [];
 	this.parent = null;
 	this.hidden = false;
+	this.focused = false;
 }
 UIElement.prototype.indent_size = 2;
 UIElement.prototype.default_colour = "#dfe8f5";
@@ -131,6 +135,8 @@ UIElement.prototype.draw_concave_indents = function(context)
 
 UIElement.prototype.isInBounds = function(x,y)
 {
+	// falsey values such as 0 are OK here because if it has no height or width... there are no bounds!
+	if(!this.width || !this.height) return false;
 	if(x > this.x && y > this.y && x < this.x + this.width && y < this.y + this.height)
 	{
 		return true;
@@ -181,10 +187,12 @@ UIElement.prototype.handle_mousedown = function(mouseX, mouseY)
 	// handle children first 
 	if(this.children)
 	{
-		this.children.forEach(child =>
-			{
-				if(child.handle_mousedown(mouseX, mouseY)) return true;
-			});
+		// a good ol' fashion for loop to prevent propagation errors
+		for(var index = 0; index < this.children.length; index++)
+		{
+			var child = this.children[index];
+			if(child.handle_mousedown(mouseX, mouseY)) return true;
+		}
 	}
 	// handle self 
 	if(this.onmousedown)
@@ -209,11 +217,58 @@ UIElement.prototype.handle_mouseup = function(mouseX, mouseY)
 	{
 		this.onmouseup(mouseX, mouseY);
 	}
-	if(this.isInBounds(mouseX,mouseY) && this.onmouseclick && this.mousedown)
+	if(this.isInBounds(mouseX,mouseY) && this.mousedown)
 	{
-		this.onmouseclick(this.mousedown.x,this.mousedown.y);
+		this.focus();
+		if(this.onmouseclick) this.onmouseclick(this.mousedown.x,this.mousedown.y);
+	}
+	else 
+	{
+		this.unfocus();
 	}
 	this.mousedown = null;
+}
+
+UIElement.prototype.handle_keydown = function(character)
+{
+	if(this.hidden) return false;
+	if(this.children)
+	{
+		// a good ol' fashion for loop to prevent propagation errors
+		for(var index = 0; index < this.children.length; index++)
+		{
+			var child = this.children[index];
+			if(child.handle_keydown(character)) return true;
+		}
+	}
+	
+	// handle self 
+	if(!this.focused) return false;
+	
+	if(this.onkeydown)
+	{
+		this.onkeydown(character);
+	}
+	return true;
+}
+
+UIElement.prototype.handle_keyup = function(character)
+{
+	if(this.children)
+	{
+		// a good ol' fashion for loop to prevent propagation errors
+		for(var index = 0; index < this.children.length; index++)
+		{
+			var child = this.children[index];
+			child.handle_keyup(character);
+		}
+	}
+	
+	if(this.onkeyup)
+	{
+		this.onkeyup(character);
+	}
+	return true;
 }
 
 UIElement.prototype.addSubElement = function(element, x=0, y=0)
@@ -239,6 +294,16 @@ UIElement.prototype.hide = function()
 UIElement.prototype.show = function()
 {
 	this.hidden = false;
+}
+
+UIElement.prototype.focus = function()
+{
+	this.focused = true;
+}
+
+UIElement.prototype.unfocus = function()
+{
+	this.focused = false;
 }
 
 // a button typed element 
@@ -934,6 +999,104 @@ UITextArea.prototype.resize = function(width,height)
 	UIElement.prototype.resize.call(this,width,height);
 	this.text_lines = [];
 	this.rasterized = false;
+}
+
+/**
+	Text fields are ALWAYS nice 
+ */
+function UITextField(width,height,validate)
+{
+	UIElement.call(this,null,null,width,height,"textfield");
+	this.text = "";
+	
+	this.isValid = false;
+	this.error = "";
+	this.validate = validate;
+}
+
+UITextField.prototype = Object.create(UIElement.prototype);
+Object.defineProperty(UITextField.prototype, 'constructor', {
+	value: UITextField,
+	enumerable: false, // so that it does not appear in 'for in' loop
+    writable: true });
+	
+UITextField.prototype.draw = function(context)
+{
+	if(this.hidden) return false;
+	var textMetric = context.measureText(this.text);
+	
+	context.save();
+	/* draw self */
+	context.fillStyle = this.darker_colour;
+	context.strokeStyle = this.default_colour;
+	
+	// standard
+	context.beginPath();
+	context.rect(this.x, this.y, this.width, this.height);
+	context.closePath();
+	context.fill();
+	// we clip in order to prevent overlap onto other elements 
+	context.clip();
+	
+	context.fillStyle = this.font_colour;
+	context.fillText(this.text,this.x + this.indent_size,this.y + this.font_size);
+	
+	//context.strokeStyle = this.font_colour;
+	if(this.focused)
+	{
+		context.moveTo(this.x + this.indent_size + textMetric.width + 1, this.y + this.indent_size);
+		context.lineTo(this.x + this.indent_size + textMetric.width + 1, this.y + this.height - this.indent_size);
+		context.stroke();
+	}
+	this.draw_concave_indents(context);
+	if(this.paint) this.paint(context,this.x,this.y);
+	
+	if(this.children)
+	{
+		// draw children
+		this.children.forEach(child =>
+			child.draw(context));
+	}
+	
+	context.restore();
+}
+	
+UITextField.prototype.getText = function()
+{
+	return this.text;
+}
+
+UITextField.prototype.setText = function(text)
+{
+	this.text = text;
+	if(this.validate) this.validate(this.text); 
+}
+
+UITextField.prototype.getErrorText = function()
+{
+	return this.error;
+}
+
+UITextField.prototype.handle_keydown = function(character)
+{
+	if(UIElement.prototype.handle_keydown.call(this,character))
+	{
+		this.onKeyTyped(character);
+	}
+}
+
+UITextField.prototype.onKeyTyped = function(character)
+{
+	// also add backspace/delete too!
+	if(character.length === 1)
+	{
+		this.text = this.text + character;
+	}
+	else if(character === "Backspace")
+	{
+		this.text = this.text.substring(0, this.text.length - 1);
+	}
+	if(this.validate) this.validate(this.text); 
 }
 
 // UI Drawer, which handles away all the common features to be drawn in terms of UI
