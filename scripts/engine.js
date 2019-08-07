@@ -26,7 +26,8 @@ var Engine = (
 			"up":false,	
 			"down":false,	
 			"left":false,	
-			"right":false,	
+			"right":false,
+			"shift":false,
 		};
 		return {
 			get CURRENCY_SYMBOL() {return CURRENCY_SYMBOL},
@@ -196,6 +197,9 @@ var Engine = (
 					case 87:
 						keysPressed["up"] = true;
 						break;
+					case 16:
+						keysPressed["shift"] = true;
+						break;
 				}
 			},
 			
@@ -224,6 +228,9 @@ var Engine = (
 					case 38:
 					case 87:
 						keysPressed["up"] = false;
+						break;
+					case 16:
+						keysPressed["shift"] = false;
 						break;
 				}
 			},

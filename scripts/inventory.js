@@ -126,9 +126,13 @@ var items = {
 		"market_value": 2,
 		"units": "bushels",
 	},
-	"cotton_fabric": {
-		"name": "Cotton Fabric",
+	"cotton_cloth": {
+		"name": "Cotton Cloth",
 		"market_value": 12,
+	},
+	"cotton_thread": {
+		"name": "Cotton Thread",
+		"market_value": 8,
 	},
 	"flax": {
 		"name": "Flax",
@@ -142,10 +146,6 @@ var items = {
 		"name": "Linens",
 		"market_value": 10,
 	},
-	"thread": {
-		"name": "Thread",
-		"market_value": 8,
-	},
 	"velvet": {
 		"name": "Velvet",
 		"market_value": 38,
@@ -157,5 +157,13 @@ var items = {
 	"yarn": {
 		"name": "Yarn",
 		"market_value": 8,
+	},
+	"hides": {
+		"name": "Hides",
+		"market_value": 18,
+	},
+	"leather": {
+		"name": "Leather",
+		"market_value": 28,
 	},
 }

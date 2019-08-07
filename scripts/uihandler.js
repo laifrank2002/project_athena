@@ -42,58 +42,14 @@ var UIHandler = (
 				content.addSubPanel("Settings",settings_tab);
 				
 				// info display 
-				var info_display = new UIPanel(0,0,300,25);
+				var info_display = new UIPanel(0,0,100,25);
 				
 				var money_display = new UILabel(`${Currency_converter.displayFull(State_manager.get_state("player","money"))}`,"left");
 				State_manager.add_listener("money_listener","player","money",()=>money_display.setText(Currency_converter.displayFull(State_manager.get_state("player","money"))));
 				info_display.addSubElement(money_display,10,5);
-				
-				var time_speed_pause = new UIButton(25,25,"",Time_handler.pause);
-				time_speed_pause.paint = function(context,x,y)
-				{
-					context.beginPath();
-					context.rect(x+6,y+6,4,13);
-					context.rect(x+15,y+6,4,13);
-					context.fill();
-					context.stroke();
-				}
-				info_display.addSubElement(time_speed_pause,100,0);
-				var time_speed_play = new UIButton(25,25,"",Time_handler.play);
-				time_speed_play.paint = function(context,x,y)
-				{
-					context.beginPath();
-					context.moveTo(x+7,y+5);
-					context.lineTo(x+7,y+20);
-					context.lineTo(x+19,y+12);
-					context.closePath();
-					context.fill();
-					context.stroke();
-				}
-				info_display.addSubElement(time_speed_play,125,0);
-				var time_speed_fast = new UIButton(25,25,"",Time_handler.fast);
-				time_speed_fast.paint = function(context,x,y)
-				{
-					context.beginPath();
-					context.moveTo(x+7,y+5);
-					context.lineTo(x+7,y+20);
-					context.lineTo(x+13,y+12);
-					context.closePath();
-					context.fill();
-					context.stroke();
-					context.beginPath();
-					context.moveTo(x+13,y+5);
-					context.lineTo(x+13,y+20);
-					context.lineTo(x+19,y+12);
-					context.closePath();
-					context.fill();
-					context.stroke();
-				}
-				info_display.addSubElement(time_speed_fast,150,0);
-				
-				var time_display = new UILabel(`Day: ${State_manager.get_state("world","time")}`,"left")
-				info_display.addSubElement(time_display,175+5,5);
-				
+
 				content.tab_bar.addSubElement(info_display,500,0);
+				content.tab_bar.addSubElement(Time_handler.panel,600,0);
 				
 				content.hideAllTabs();
 				

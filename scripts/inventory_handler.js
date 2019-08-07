@@ -17,10 +17,15 @@ var Inventory_handler = (
 			{
 				panel = new UIScrollPanel(0,0,800,575,800);
 				inventory = Inventory.inventory;
+				
+				var display_count = 0;
 				for(var key in inventory)
 				{
 					Inventory_handler.create_item_display(inventory[key]);
+					display_count++;
 				}
+				
+				panel.resizeMaxHeight(display_count * DISPLAY_HEIGHT);
 				
 				State_manager.set_state("player","inventory",inventory);
 			},

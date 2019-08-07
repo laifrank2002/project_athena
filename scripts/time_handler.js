@@ -10,13 +10,65 @@ var Time_handler = (
 		
 		var timebank;
 		
+		var panel;
+		
 		return {
+			get panel() {return panel},
+			
 			initialize: function()
 			{
 				paused = false;
 				speed = 1;
 				
 				timebank = 0;
+				
+				panel = new UIPanel(null,null,200,25);
+				
+				var time_speed_pause = new UIButton(25,25,"",Time_handler.pause);
+				time_speed_pause.paint = function(context,x,y)
+				{
+					context.beginPath();
+					context.rect(x+6,y+6,4,13);
+					context.rect(x+15,y+6,4,13);
+					context.fill();
+					context.stroke();
+				}
+				panel.addSubElement(time_speed_pause,0,0);
+				var time_speed_play = new UIButton(25,25,"",Time_handler.play);
+				time_speed_play.paint = function(context,x,y)
+				{
+					context.beginPath();
+					context.moveTo(x+7,y+5);
+					context.lineTo(x+7,y+20);
+					context.lineTo(x+19,y+12);
+					context.closePath();
+					context.fill();
+					context.stroke();
+				}
+				panel.addSubElement(time_speed_play,25,0);
+				var time_speed_fast = new UIButton(25,25,"",Time_handler.fast);
+				time_speed_fast.paint = function(context,x,y)
+				{
+					context.beginPath();
+					context.moveTo(x+7,y+5);
+					context.lineTo(x+7,y+20);
+					context.lineTo(x+13,y+12);
+					context.closePath();
+					context.fill();
+					context.stroke();
+					context.beginPath();
+					context.moveTo(x+13,y+5);
+					context.lineTo(x+13,y+20);
+					context.lineTo(x+19,y+12);
+					context.closePath();
+					context.fill();
+					context.stroke();
+				}
+				panel.addSubElement(time_speed_fast,50,0);
+				
+				time_display = new UILabel(`${State_manager.get_state("world","time")}`,"left");
+				State_manager.add_listener("time_listener","world","time",() => time_display.setText(State_manager.get_state("world","time")));
+				panel.addSubElement(time_display,75+5,5);
 			},
 			
 			tick: function(lapse)
@@ -29,6 +81,8 @@ var Time_handler = (
 						if(timebank > TIME_PER_TICK / speed)
 						{
 							timebank -= TIME_PER_TICK / speed;
+							// now handle time 
+							State_manager.add_state("world","time",1);
 							// tick everything else 
 							Industry_handler.tick();
 						}					

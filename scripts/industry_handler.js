@@ -43,12 +43,12 @@ var Industry_handler = (
 				
 				palette = new UIPanel(null,null,600,toolbar.height);
 				// adding all of the buttons for the palette 
-				palette_list = ["spinster"];
+				palette_list = ["spinster","weaver","tanner"];
 				for(var index = 0; index < palette_list.length; index++)
 				{
 					var producer = Producer.prototype.types[palette_list[index]];
 					var icon_button = new UIButton(25,25,"");
-					icon_button.icon = Engine.assets[producer.image];
+					icon_button.icon = Engine.assets[producer.icon];
 					icon_button.palette_number = index;
 					
 					icon_button.paint = function(context,x,y)
@@ -118,7 +118,7 @@ var Industry_handler = (
 					
 					if(!isNaN(currently_selected))
 					{
-						// a further plonk is required in the case of deselect
+						// a further check is required in the case of deselect
 						if(Producer.prototype.types[palette_list[currently_selected]])
 						{
 							var image = Engine.assets[Producer.prototype.types[palette_list[currently_selected]].image];
@@ -126,8 +126,8 @@ var Industry_handler = (
 							context.drawImage(image
 								,map_x + grid_x * current_map.TILE_WIDTH
 								,map_y + grid_y * current_map.TILE_HEIGHT
-								,current_map.TILE_WIDTH
-								,current_map.TILE_HEIGHT);
+								,current_map.TILE_WIDTH * Producer.prototype.types[palette_list[currently_selected]].width
+								,current_map.TILE_HEIGHT * Producer.prototype.types[palette_list[currently_selected]].height);
 							context.globalAlpha = 1.0;
 						}
 						
@@ -168,15 +168,32 @@ var Industry_handler = (
 						
 						if(!isNaN(currently_selected) && currently_selected !== null)
 						{
-							// third check that last mouse down was on the same grid 
-							Engine.log(panel.mousedown);
-							Industry_handler.buy_and_plop(palette_list[currently_selected],grid_x,grid_y);
-							Industry_handler.deselect_palette();
+							// third check that last mouse down was on the same grid to make sure so that if the user mouses away, they don't accidentally build something there.
+							var last_grid_x = Math.floor((panel.mousedown.x - map_x)/ current_map.TILE_WIDTH);
+							var last_grid_y = Math.floor((panel.mousedown.y - map_y)/ current_map.TILE_HEIGHT);
+							if(last_grid_x === grid_x && last_grid_y === grid_y)
+							{							
+								Industry_handler.buy_and_plop(palette_list[currently_selected],grid_x,grid_y);
+								if(!Engine.keysPressed["shift"])
+								{
+									Industry_handler.deselect_palette();
+								}
+							}
+							else 
+							{
+								if(!Engine.keysPressed["shift"])
+								{
+									Industry_handler.deselect_palette();
+								}
+							}
 						}
 					}
 					else 
 					{
-						Industry_handler.deselect_palette();
+						if(!Engine.keysPressed["shift"])
+						{
+							Industry_handler.deselect_palette();
+						}
 					}
 				}
 			},

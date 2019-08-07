@@ -220,7 +220,7 @@ UIElement.prototype.handle_mouseup = function(mouseX, mouseY)
 	if(this.isInBounds(mouseX,mouseY) && this.mousedown)
 	{
 		this.focus();
-		if(this.onmouseclick) this.onmouseclick(this.mousedown.x,this.mousedown.y);
+		if(this.onmouseclick) this.onmouseclick(mouseX,mouseY);
 	}
 	else 
 	{

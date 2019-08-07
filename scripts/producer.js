@@ -26,19 +26,51 @@ Producer.prototype.types = {
 		width: 1,
 		height: 1,
 		image: "spinster",
-		animation_frames: ["spinster1","spinster2"],
+		icon: "spinster",
 		// different options of production
 		production: [
-			{name: "Cotton -> Thread"
-			,rate: 1.1
+			{name: "Cotton -> Cotton Thread"
+			,rate: 0.15
 			,input: {"cotton":1}
-			,output: {"thread":2}},
+			,output: {"cotton_thread":2}},
 		],
-		price: 18,
+		price: 0,
 		upkeep: 18,
 		type: "human",
 	},
+	// RR(Research Confirmed)
 	// weaver: 0.67 cloth per day
+	"weaver": {
+		width: 1,
+		height: 1,
+		image: "weaver",
+		icon: "weaver",
+		production: [
+			{name: "Cotton Thread -> Cotton Cloth"
+			,rate: 0.06
+			,input: {"cotton_thread":1}
+			,output: {"cotton_cloth":1}},
+		],
+		price: 0,
+		upkeep: 31,
+		type: "human",
+	},
+	
+	"tanner": {
+		width: 2,
+		height: 1,
+		image: "tanner",
+		icon: "tanner_icon",
+		production: [
+			{name: "Hides -> Leather"
+			,rate: 0.04
+			,input: {"hides":1}
+			,output: {"leather":1}},
+		],
+		price: 0,
+		upkeep: 31,
+		type: "human",
+	}
 }
 
 Producer.prototype.ANIMATION_COOLDOWN = 1000;
@@ -54,8 +86,8 @@ Producer.prototype.draw = function(context,x,y)
 			context.drawImage(this.image
 				,x + grid_x * Map.prototype.TILE_WIDTH
 				,y + grid_y * Map.prototype.TILE_HEIGHT
-				,Map.prototype.TILE_WIDTH
-				,Map.prototype.TILE_HEIGHT);
+				,Map.prototype.TILE_WIDTH * this.width 
+				,Map.prototype.TILE_HEIGHT * this.height);
 		}
 	}
 }
