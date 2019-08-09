@@ -123,6 +123,8 @@ var Engine = (
 				// draw UI over everything
 				UIHandler.draw(context);
 				
+				// draw the mouse 
+				Engine.draw_cursor(mousePosition.x,mousePosition.y);
 				// customary ticking and preparation for next tick
 				if(!lastTime)
 				{
@@ -233,6 +235,19 @@ var Engine = (
 						keysPressed["shift"] = false;
 						break;
 				}
+			},
+			
+			draw_cursor: function(x,y)
+			{
+				context.beginPath();
+				context.moveTo(x,y);
+				context.lineTo(x + 15,y + 5);
+				context.lineTo(x + 5,y + 15);
+				context.closePath();
+				context.strokeStyle = "black";
+				context.fillStyle = "white";
+				context.stroke();
+				context.fill();
 			},
 		}
 	}

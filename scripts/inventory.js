@@ -10,7 +10,12 @@ var Inventory = (
 			{
 				for (var key in items)
 				{
-					inventory[key] = {key: key, name: items[key].name, count: 0, average_price: 0, market_value: items[key].market_value};
+					inventory[key] = {key: key
+						,name: items[key].name
+						,count: 0
+						,price: items[key].market_value
+						,average_price: 0
+						,market_value: items[key].market_value};
 				}
 			},
 			
@@ -26,6 +31,7 @@ var Inventory = (
 					if(Inventory.add_amount(name, amount, price))
 					{
 						State_manager.add_state("player","money",-price * amount);
+						return true;
 					}
 				}
 			},
@@ -82,21 +88,15 @@ var Inventory = (
 			{
 				if(inventory[key])
 				{
-					if(inventory[key].count >= amount)
+
+					inventory[key].count -= amount;
+					if(inventory[key].count < 0) 
 					{
-						inventory[key].count -= amount;
-						if(inventory[key].count < 0) 
-						{
-							inventory[key].count = 0; 
-						}
-						Inventory_handler.update();
-						return true;
+						inventory[key].count = 0; 
 					}
-					else 
-					{
-						Engine.log("Subtract Amount: There aren't enough items to subtract.");
-						return false;
-					}
+					Inventory_handler.update();
+					return true;
+
 				}
 				else 
 				{
@@ -115,6 +115,18 @@ var Inventory = (
 				{
 					Engine.log("Get Item: item " + key + " doesn't exist.");
 				}
+			},
+			
+			get_total_value: function()
+			{
+				var total_value = 0;
+				
+				for(var key in inventory)
+				{
+					total_value += inventory[key].count * inventory[key].market_value;
+				}
+				
+				return total_value;
 			}
 		}
 	}
@@ -124,7 +136,6 @@ var items = {
 	"cotton": {
 		"name": "Cotton",
 		"market_value": 2,
-		"units": "bushels",
 	},
 	"cotton_cloth": {
 		"name": "Cotton Cloth",

@@ -278,12 +278,14 @@ UIElement.prototype.addSubElement = function(element, x=0, y=0)
 	element.relative_x = x;
 	element.relative_y = y;
 	this.children.push(element);
+	return element; // allows us to chain elements
 }
 
 UIElement.prototype.removeSubElement = function(element)
 {
 	element.parent = null;
 	this.children = this.children.filter (child => child !== element);
+	return element;
 }
 
 UIElement.prototype.hide = function()

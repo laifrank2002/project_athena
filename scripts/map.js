@@ -65,6 +65,11 @@ Map.prototype.tick = function()
 	this.objects.forEach(object => object.tick());
 }
 
+Map.prototype.close_day = function()
+{
+	this.objects.forEach(object => object.close_day());
+}
+
 Map.prototype.plopObject = function(object, x=0, y=0)
 {
 	// validate first to save time and prevent errors
@@ -144,6 +149,10 @@ Map.prototype.getTile = function(x,y)
 	return null;
 }
 
+Map.prototype.getObjects = function()
+{
+	return this.objects;
+}
 /**
 	If a set of coordinates is within the map, return true.
  */
@@ -222,10 +231,9 @@ function MapObject(width, height)
 {
 	this.width = width;
 	this.height = height;
+	
 	this.occupiedTiles = null;
-	
 	this.isPlopped = false;
-	
 	this.active = true;
 }
 
@@ -235,6 +243,11 @@ MapObject.prototype.draw = function(context,x,y)
 }
 
 MapObject.prototype.tick = function()
+{
+	
+}
+
+MapObject.prototype.close_day = function()
 {
 	
 }

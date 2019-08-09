@@ -103,6 +103,8 @@ var Inventory_handler = (
 				return display;
 			},
 			
+			
+			
 			update: function()
 			{
 				displays.forEach(display =>
@@ -122,6 +124,11 @@ var Inventory_handler = (
 			sell_item: function(name, amount, price)
 			{
 				Inventory.sell_item(name, amount, price);	
+			},
+			
+			get_inventory_value: function()
+			{
+				return Inventory.get_total_value();
 			},
 		}
 	}

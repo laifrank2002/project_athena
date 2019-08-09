@@ -48,8 +48,8 @@ var UIHandler = (
 				State_manager.add_listener("money_listener","player","money",()=>money_display.setText(Currency_converter.displayFull(State_manager.get_state("player","money"))));
 				info_display.addSubElement(money_display,10,5);
 
-				content.tab_bar.addSubElement(info_display,500,0);
-				content.tab_bar.addSubElement(Time_handler.panel,600,0);
+				content.tab_bar.addSubElement(info_display,400,0);
+				content.tab_bar.addSubElement(Time_handler.panel,500,0);
 				
 				content.hideAllTabs();
 				

@@ -19,29 +19,35 @@ var Industry_handler = (
 		var palette_list;
 		
 		var statusbar;
+		var statusbar_text;
 		
-		var currently_selected;
-		
-		var background;
+		var background_factory;
+		var background_day;
+		var background_night;
 		var map_offset;
 		var viewport;
-
+		
+		var settings = {};
+		var currently_selected;
+		
 		return {
 			get current_map() {return current_map},
 			
 			get panel() {return panel},
 			get viewport() {return viewport},
 			
+			get settings() {return settings},
+			
 			initialize: function()
 			{
-				panel = new UIElement(0,0,800,575,"generic",Industry_handler.handle_mouseclick);
+				panel = new UIElement(0,0,800,550,"generic",Industry_handler.handle_mouseclick);
 				panel.paint = Industry_handler.draw;
 				
 				// own components
 				toolbar = new UIPanel(null,null,panel.width,25);
 				panel.addSubElement(toolbar,0,0);
 				
-				palette = new UIPanel(null,null,600,toolbar.height);
+				palette = new UIPanel(null,null,400,toolbar.height);
 				// adding all of the buttons for the palette 
 				palette_list = ["spinster","weaver","tanner"];
 				for(var index = 0; index < palette_list.length; index++)
@@ -49,41 +55,71 @@ var Industry_handler = (
 					var producer = Producer.prototype.types[palette_list[index]];
 					var icon_button = new UIButton(25,25,"");
 					icon_button.icon = Engine.assets[producer.icon];
+					icon_button.producer = producer;
 					icon_button.palette_number = index;
 					
 					icon_button.paint = function(context,x,y)
 					{
 						var indent = UIElement.prototype.indent_size;
 						context.drawImage(this.icon,x + indent,y + indent,25 - 2*indent,25 - 2*indent);
+						
+						// also check if mouse is in borders, counts as hover in hovertext.
+						if(this.isInBounds(Engine.mouseX,Engine.mouseY))
+						{
+							Industry_handler.set_statusbar_text(this.producer.name + ": " + this.producer.description);
+						}
 					};
 					icon_button.onmouseclick = function()
 					{
 						Industry_handler.set_palette_selected(this.palette_number);
 					};
 					
-					palette.addSubElement(icon_button,index * 25, 0);
-					palette_list[index];
+					palette.addSubElement(icon_button,100 + index * 25, 0);
 				}
+				// special 
+				var cursor_button = new UIButton(25,25,"");
+				cursor_button.paint = function(context,x,y)
+				{
+					var indent = UIElement.prototype.indent_size;
+					
+					context.beginPath();
+					context.moveTo(x + indent + 3,y + indent + 3);
+					context.lineTo(x + 15 + indent + 3,y + 5 + indent + 3);
+					context.lineTo(x + 5 + indent + 3,y + 15 + indent + 3);
+					context.closePath();
+					context.strokeStyle = "black";
+					context.fillStyle = "white";
+					context.stroke();
+					context.fill();
+				}
+				cursor_button.onmouseclick = function()
+				{
+					Industry_handler.deselect_palette();
+				};
+				palette.addSubElement(cursor_button,0,0);
 				
 				toolbar.addSubElement(palette);
 				
 				statusbar = new UIPanel(null,null,panel.width,25);
+				statusbar_text = new UILabel(`...`,"left");
+				statusbar.addSubElement(statusbar_text,5,5);
 				panel.addSubElement(statusbar,0,panel.height - 25);
-				// inited maps 
-				
-				current_map_name = "map1";
-				
-				var map = Maps[current_map_name];
-				
-				background = Engine.assets[map.background];
-				map_offset = map.factory_position;
-				viewport = new Viewport(0,0,map.width,map.height);
-				current_map = new Map(map.factory_width, map.factory_height);
-				
-				State_manager.set_state("player","map_name",current_map_name);
-				State_manager.set_state("player","map",current_map);
 				
 				viewport = new Viewport(0,0,panel.width,panel.height-50);
+				
+				// data
+				
+				current_map_name = State_manager.get_state("player","map_name");
+				
+				background_factory = Engine.assets[Maps[current_map_name].factory];
+				background_day = Engine.assets[Maps[current_map_name].skyline_day];
+				background_night = Engine.assets[Maps[current_map_name].skyline_night];
+				
+				map_offset = Maps[current_map_name].factory_position;
+				current_map = State_manager.get_state("player","map");
+				
+				settings = State_manager.get_state("settings","industry");
+
 			},
 			
 			draw: function(context)
@@ -95,7 +131,32 @@ var Industry_handler = (
 				var map_y = y + map_offset.y - viewport.y;
 				
 				// draw background 
-				context.drawImage(background
+				// changes based on time.
+				if(Time_handler.get_day_stage() === "day")
+				{
+					context.drawImage(background_day
+						,viewport.x
+						,viewport.y
+						,viewport.width
+						,viewport.height
+						,x
+						,y
+						,viewport.width
+						,viewport.height);
+				}
+				else if (Time_handler.get_day_stage() === "night")
+				{
+					context.drawImage(background_night
+						,viewport.x
+						,viewport.y
+						,viewport.width
+						,viewport.height
+						,x
+						,y
+						,viewport.width
+						,viewport.height);
+				}
+				context.drawImage(background_factory
 					,viewport.x
 					,viewport.y
 					,viewport.width
@@ -108,31 +169,49 @@ var Industry_handler = (
 				current_map.draw(context,map_x,map_y);
 				
 				// now draw thy mouse shadow
-				if(Engine.mouseX >= map_x
-					&& Engine.mouseY >= map_y
-					&& Engine.mouseX < map_x + current_map.TILE_WIDTH * current_map.width
-					&& Engine.mouseY < map_y + current_map.TILE_HEIGHT * current_map.height)
+				var grid_x = Math.floor((Engine.mouseX - map_x)/ current_map.TILE_WIDTH);
+				var grid_y = Math.floor((Engine.mouseY - map_y)/ current_map.TILE_HEIGHT);
+				
+				if(!isNaN(currently_selected))
 				{
-					var grid_x = Math.floor((Engine.mouseX - map_x)/ current_map.TILE_WIDTH);
-					var grid_y = Math.floor((Engine.mouseY - map_y)/ current_map.TILE_HEIGHT);
-					
-					if(!isNaN(currently_selected))
+					// a further check is required in the case of deselect
+					var image;
+					var producer = Producer.prototype.types[palette_list[currently_selected]]; 
+					if(typeof currently_selected === "number")
 					{
-						// a further check is required in the case of deselect
-						if(Producer.prototype.types[palette_list[currently_selected]])
+						if(producer)
 						{
-							var image = Engine.assets[Producer.prototype.types[palette_list[currently_selected]].image];
-							context.globalAlpha = 0.5;
-							context.drawImage(image
-								,map_x + grid_x * current_map.TILE_WIDTH
-								,map_y + grid_y * current_map.TILE_HEIGHT
-								,current_map.TILE_WIDTH * Producer.prototype.types[palette_list[currently_selected]].width
-								,current_map.TILE_HEIGHT * Producer.prototype.types[palette_list[currently_selected]].height);
-							context.globalAlpha = 1.0;
+							image = Engine.assets[Producer.prototype.types[palette_list[currently_selected]].image];
 						}
-						
 					}
+					
+					if(producer)
+					{
+						context.globalAlpha = 0.5;
+						if(Engine.mouseX >= map_x
+							&& Engine.mouseY >= map_y
+							&& Engine.mouseX < map_x + current_map.TILE_WIDTH * current_map.width
+							&& Engine.mouseY < map_y + current_map.TILE_HEIGHT * current_map.height)
+						{
+							context.drawImage(image
+							,map_x + grid_x * current_map.TILE_WIDTH
+							,map_y + grid_y * current_map.TILE_HEIGHT
+							,current_map.TILE_WIDTH * producer.width
+							,current_map.TILE_HEIGHT * producer.height);
+						}
+						else 
+						{
+							context.drawImage(image
+							,Engine.mouseX
+							,Engine.mouseY
+							,current_map.TILE_WIDTH * producer.width
+							,current_map.TILE_HEIGHT * producer.height);
+						}
+						context.globalAlpha = 1.0;
+					}
+					
 				}
+				
 			},
 			
 			tick: function()
@@ -140,6 +219,14 @@ var Industry_handler = (
 				current_map.tick();
 			},
 			
+			// handle the day 
+			close_day: function()
+			{
+				// update stats
+				
+				// pay your employees
+				current_map.close_day();
+			},
 			/**
 				Does a lot of things. 
 				TODO
@@ -200,27 +287,14 @@ var Industry_handler = (
 			
 			
 			/**
-				Load data
-			 */
-			load_data: function(data)
-			{
-				current_map_name = data["player"].current_map_name;
-				current_map = data["player"].current_map;
-				
-				var map = Maps[current_map_name];
-				
-				background = Engine.assets[map.background];
-				map_offset = map.factory_position;
-			},
-			
-			/**
 				Buys something
 			 */
 			buy_and_plop: function(producer_name,x,y)
 			{
 				if(State_manager.get_state("player","money") >= Producer.prototype.types[producer_name].price)
 				{
-					if(current_map.plopObject(new Producer(producer_name),x,y))
+					var producer = new Producer(producer_name);
+					if(current_map.plopObject(producer,x,y))
 					{
 						State_manager.add_state("player","money",-Producer.prototype.types[producer_name].price);
 						return true;
@@ -238,6 +312,9 @@ var Industry_handler = (
 				}
 			},
 			
+			// unplop
+			
+			// for buttons 
 			set_palette_selected: function(index)
 			{
 				if(index >= 0 && index < palette_list.length)
@@ -250,21 +327,19 @@ var Industry_handler = (
 			{
 				currently_selected = null;
 			},
+			
+			set_statusbar_text: function(text)
+			{
+				statusbar_text.setText(text);
+			},
+			
+			// for data
+			get_total_wages: function()
+			{
+				var total_wages = 0;
+				current_map.getObjects().forEach(object => {if(object.type){ total_wages += object.type.upkeep}});
+				return total_wages;
+			},
 		}
 	}
 )();
-
-/**
-	Defined maps that make it easier on saving and loading 
- */
-var Maps = {
-	"map1": {
-		name: "Testing",
-		background: "map1",
-		width: 800,
-		height: 600,
-		factory_position: {x: 200, y: 200},
-		factory_width: 10,
-		factory_height: 6,
-	},
-}

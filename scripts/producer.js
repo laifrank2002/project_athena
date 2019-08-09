@@ -23,6 +23,7 @@ Object.defineProperty(Producer.prototype, 'constructor', {
 
 Producer.prototype.types = {
 	"spinster": {
+		name: "Spinster",
 		width: 1,
 		height: 1,
 		image: "spinster",
@@ -37,10 +38,12 @@ Producer.prototype.types = {
 		price: 0,
 		upkeep: 18,
 		type: "human",
+		description: "A humble spinster to turn fiber into thread. 18d/day",
 	},
 	// RR(Research Confirmed)
 	// weaver: 0.67 cloth per day
 	"weaver": {
+		name: "Weaver",
 		width: 1,
 		height: 1,
 		image: "weaver",
@@ -54,9 +57,11 @@ Producer.prototype.types = {
 		price: 0,
 		upkeep: 31,
 		type: "human",
+		description: "How many weaves can a weaver weave if a weaver could weave wool? 31d/day",
 	},
 	
 	"tanner": {
+		name: "Tanner",
 		width: 2,
 		height: 1,
 		image: "tanner",
@@ -70,6 +75,7 @@ Producer.prototype.types = {
 		price: 0,
 		upkeep: 31,
 		type: "human",
+		description: "Strong, tough, and covered in tannins. 31d/day",
 	}
 }
 
@@ -106,7 +112,17 @@ Producer.prototype.tick = function()
 	var limited_throughput_rate = 1.0;
 	for(key in production.input)
 	{
-		limited_throughput_rate = Math.min(limited_throughput_rate,Inventory.get_item(key).count / (production.input[key] * rate));
+		// or, if autobuy is on...
+		if(Inventory.get_item(key).count < production.input[key] * rate)
+		{
+			if(Industry_handler.settings.autobuy)
+			{
+				var missing_amount = production.input[key] * rate - Inventory.get_item(key).count;
+				Inventory_handler.buy_item(key, missing_amount, Inventory.get_item(key).price);
+			}
+		}
+		
+		limited_throughput_rate = Math.min(limited_throughput_rate,Inventory.get_item(key).count / (production.input[key] * rate))
 	}
 	rate = rate * limited_throughput_rate;
 	
@@ -121,4 +137,10 @@ Producer.prototype.tick = function()
 	{
 		Inventory.add_amount(key,production.output[key] * rate);
 	}
+}
+
+Producer.prototype.close_day = function()
+{
+	// naive paying
+	State_manager.add_state("player","money",-this.type.upkeep);
 }
