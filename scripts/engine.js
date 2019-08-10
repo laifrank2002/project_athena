@@ -259,6 +259,14 @@ function Point(x,y)
 	this.y = y;
 }
 
+Point.prototype.equals = function(point)
+{
+	if(this.x === point.x && this.y === point.y)
+	{
+		return true;
+	}
+}
+
 function Rectangle(x,y,width,height)
 {
 	this.x = x;

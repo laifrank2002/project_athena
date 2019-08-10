@@ -30,6 +30,14 @@ var Industry_handler = (
 		var settings = {};
 		var currently_selected;
 		
+		/**
+			Returns map x and map y
+		 */
+		function getMapPosition()
+		{
+			return new Point(panel.x + map_offset.x - viewport.x, panel.y + map_offset.y - viewport.y);
+		}
+		
 		return {
 			get current_map() {return current_map},
 			
@@ -45,7 +53,7 @@ var Industry_handler = (
 				
 				// own components
 				toolbar = new UIPanel(null,null,panel.width,25);
-				panel.addSubElement(toolbar,0,0);
+				panel.addSubElement(toolbar,0,panel.height - 50);
 				
 				palette = new UIPanel(null,null,400,toolbar.height);
 				// adding all of the buttons for the palette 
@@ -125,11 +133,10 @@ var Industry_handler = (
 			draw: function(context)
 			{
 				var x = panel.x;
-				var y = panel.y + 25;
+				var y = panel.y;
 				
-				var map_x = x + map_offset.x - viewport.x;
-				var map_y = y + map_offset.y - viewport.y;
-				
+				var map_position = getMapPosition();
+
 				// draw background 
 				// changes based on time.
 				if(Time_handler.get_day_stage() === "day")
@@ -166,12 +173,9 @@ var Industry_handler = (
 					,viewport.width
 					,viewport.height);
 				// draw grid and objects 
-				current_map.draw(context,map_x,map_y);
+				current_map.draw(context,map_position.x,map_position.y);
 				
 				// now draw thy mouse shadow
-				var grid_x = Math.floor((Engine.mouseX - map_x)/ current_map.TILE_WIDTH);
-				var grid_y = Math.floor((Engine.mouseY - map_y)/ current_map.TILE_HEIGHT);
-				
 				if(!isNaN(currently_selected))
 				{
 					// a further check is required in the case of deselect
@@ -188,24 +192,23 @@ var Industry_handler = (
 					if(producer)
 					{
 						context.globalAlpha = 0.5;
-						if(Engine.mouseX >= map_x
-							&& Engine.mouseY >= map_y
-							&& Engine.mouseX < map_x + current_map.TILE_WIDTH * current_map.width
-							&& Engine.mouseY < map_y + current_map.TILE_HEIGHT * current_map.height)
+						
+						if(Industry_handler.is_in_map_bounds(Engine.mouseX,Engine.mouseY))
 						{
+							var grid_position = Industry_handler.get_grid_position(Engine.mouseX,Engine.mouseY);
 							context.drawImage(image
-							,map_x + grid_x * current_map.TILE_WIDTH
-							,map_y + grid_y * current_map.TILE_HEIGHT
-							,current_map.TILE_WIDTH * producer.width
-							,current_map.TILE_HEIGHT * producer.height);
+								,map_position.x + grid_position.x * current_map.TILE_WIDTH
+								,map_position.y + grid_position.y * current_map.TILE_HEIGHT
+								,current_map.TILE_WIDTH * producer.width
+								,current_map.TILE_HEIGHT * producer.height);
 						}
 						else 
 						{
 							context.drawImage(image
-							,Engine.mouseX
-							,Engine.mouseY
-							,current_map.TILE_WIDTH * producer.width
-							,current_map.TILE_HEIGHT * producer.height);
+								,Engine.mouseX
+								,Engine.mouseY
+								,current_map.TILE_WIDTH * producer.width
+								,current_map.TILE_HEIGHT * producer.height);
 						}
 						context.globalAlpha = 1.0;
 					}
@@ -228,63 +231,59 @@ var Industry_handler = (
 				current_map.close_day();
 			},
 			/**
-				Does a lot of things. 
+				Handles the mouseclick for EVERYTHING
 				TODO
-				Decompose
+				Make a wrapper for da map.
 			 */
 			handle_mouseclick: function(mouseX, mouseY)
 			{
 				var x = panel.x;
-				var y = panel.y + 25;
-				
-				var map_x = x + map_offset.x - viewport.x;
-				var map_y = y + map_offset.y - viewport.y;
-				// make a second check to make sure it's within the internal map frame as well.
+				var y = panel.y;
+
 				if(mouseX >= x 
 					&& mouseY >= y 
 					&& mouseX < x + panel.width
 					&& mouseY < y + panel.height)
 				{
-					if(mouseX >= map_x
-						&& mouseY >= map_y
-						&& mouseX < map_x + current_map.TILE_WIDTH * current_map.width
-						&& mouseY < map_y + current_map.TILE_HEIGHT * current_map.height)
+					if(Industry_handler.is_in_map_bounds(mouseX,mouseY))
 					{
-						var grid_x = Math.floor((mouseX - map_x)/ current_map.TILE_WIDTH);
-						var grid_y = Math.floor((mouseY - map_y)/ current_map.TILE_HEIGHT);
-						
 						if(!isNaN(currently_selected) && currently_selected !== null)
 						{
-							// third check that last mouse down was on the same grid to make sure so that if the user mouses away, they don't accidentally build something there.
-							var last_grid_x = Math.floor((panel.mousedown.x - map_x)/ current_map.TILE_WIDTH);
-							var last_grid_y = Math.floor((panel.mousedown.y - map_y)/ current_map.TILE_HEIGHT);
-							if(last_grid_x === grid_x && last_grid_y === grid_y)
-							{							
-								Industry_handler.buy_and_plop(palette_list[currently_selected],grid_x,grid_y);
-								if(!Engine.keysPressed["shift"])
-								{
-									Industry_handler.deselect_palette();
-								}
+							var current_grid_position = Industry_handler.get_grid_position(mouseX,mouseY);
+							var last_grid_position = Industry_handler.get_grid_position(panel.mousedown.x,panel.mousedown.y);
+							
+							if(current_grid_position.equals(last_grid_position))
+							{
+								Industry_handler.buy_and_plop(palette_list[currently_selected]
+									,current_grid_position.x
+									,current_grid_position.y);
+								if(!Engine.keysPressed["shift"]) Industry_handler.deselect_palette();
+								
 							}
 							else 
 							{
-								if(!Engine.keysPressed["shift"])
-								{
-									Industry_handler.deselect_palette();
-								}
+								if(!Engine.keysPressed["shift"]) Industry_handler.deselect_palette();
 							}
+						}
+						else if (currently_selected === "query")
+						{
+							
+						}
+						else if(currently_selected === "move")
+						{
+							
+						}
+						else if(currently_selected === "delete")
+						{
+							
 						}
 					}
 					else 
 					{
-						if(!Engine.keysPressed["shift"])
-						{
-							Industry_handler.deselect_palette();
-						}
+						if(!Engine.keysPressed["shift"]) Industry_handler.deselect_palette();
 					}
 				}
 			},
-			
 			
 			/**
 				Buys something
@@ -339,6 +338,38 @@ var Industry_handler = (
 				var total_wages = 0;
 				current_map.getObjects().forEach(object => {if(object.type){ total_wages += object.type.upkeep}});
 				return total_wages;
+			},
+			
+			/* UTILITY */
+			/**
+				Takes an ABSOLUTE mouse position, and returns a grid position.
+			 */
+			get_grid_position: function(mouseX,mouseY)
+			{
+				var map_position = getMapPosition();
+				if(Industry_handler.is_in_map_bounds(mouseX,mouseY))
+				{
+					return new Point(Math.floor((mouseX - map_position.x)/ current_map.TILE_WIDTH),Math.floor((mouseY - map_position.y)/ current_map.TILE_HEIGHT));
+				}
+				else 
+				{
+					return false;
+				}
+			},
+			/**
+				Takes an ABSOLUTE mouse position, and returns true if is within current map bounds
+			 */
+			is_in_map_bounds: function(x,y)
+			{
+				var map_position = getMapPosition();
+				if(x >= map_position.x
+					&& y >= map_position.y
+					&& x < map_position.x + current_map.TILE_WIDTH * current_map.width
+					&& y < map_position.y + current_map.TILE_HEIGHT * current_map.height)
+				{
+					return true;
+				}
+				return false;
 			},
 		}
 	}
