@@ -2,7 +2,7 @@
 	****UI Element Documentation****
 	function UIElement(x,y,width,height,type = "generic",onmouseclick = null)
 	
-	function UIWindow(x,y,width,height,menuButton = false)
+	function UIWindow(x,y,width,height,draggable = false, menuButton = false)
 	
 	function UIPanel (x,y,width,height)
 	function UITabbedPanel (x,y,width,height)
@@ -13,7 +13,6 @@
 	function UIImage (width,height,source,image_smoothing = false)
 	function UITextField(width,height,validate)
 	function UITextArea(width,height,text)
-	
 	
  */
 /** 
@@ -155,8 +154,8 @@ UIElement.prototype.setPosition = function(x,y)
 	
 	if(this.parent)
 	{
-		this.relative_x += x - this.x;
-		this.relative_y += y - this.y;
+		this.relative_x = x - this.parent.x;
+		this.relative_y = y - this.parent.y;
 	}
 	
 	if(this.children)
@@ -164,6 +163,23 @@ UIElement.prototype.setPosition = function(x,y)
 		this.children.forEach(child =>
 			{
 				child.setPosition(x + child.relative_x,y + child.relative_y);
+			});
+	}
+}
+
+/**
+	Moves without actually changing the relative_x and relative_y. Useful for SCROLL.
+ */
+UIElement.prototype.setTemporaryPosition = function(x,y)
+{
+	this.x = x;
+	this.y = y;
+	
+	if(this.children)
+	{
+		this.children.forEach(child =>
+			{
+				child.setTemporaryPosition(x + child.relative_x,y + child.relative_y);
 			});
 	}
 }
@@ -606,7 +622,7 @@ UIScrollPanel.prototype.moveToScroll = function()
 	// in order to get the child ABSOLUTE
 	// of course, we are going to be using the CONTENT panel's children 
 	// then we can factor in SCROLL
-	this.content_panel.children.forEach(child => child.setPosition(child.relative_x + this.x
+	this.content_panel.children.forEach(child => child.setTemporaryPosition(child.relative_x + this.x
 		,child.relative_y + this.y - scroll * (this.max_height - this.height)));
 }
 
@@ -828,21 +844,17 @@ UIScrollBarComponentBar.prototype.draw = function(context)
 	STATUS BAR 
  */
 
-function UIWindow(x,y,width,height,menuButton = false)
+function UIWindow(x,y,width,height,draggable = false, menuButton = false)
 {
-	
 	UIElement.call(this,x,y,width,height,"window");
 	// title
-	this.title_bar = new UITitleBar(menuButton);
+	this.title_bar = new UITitleBar(draggable,menuButton);
 	UIElement.prototype.addSubElement.call(this,this.title_bar,0,0);
 	this.title_bar.attach(this);
 	
 	// content
 	this.content_panel = new UIPanel(null,null,this.width,this.height - UIWindow.prototype.TITLE_BAR_HEIGHT);
 	UIElement.prototype.addSubElement.call(this,this.content_panel,0,UIWindow.prototype.TITLE_BAR_HEIGHT);
-	
-	// optional elements 
-	
 }
 
 UIWindow.prototype = Object.create(UIElement.prototype);
@@ -856,15 +868,45 @@ UIWindow.prototype.TITLE_BAR_HEIGHT = 25;
 UIWindow.prototype.addSubElement = function(element,x=0,y=0)
 {
 	this.content_panel.addSubElement(element,x,y);
+}
+
+UIWindow.prototype.drag = function(x,y)
+{
+	this.setPosition(x,y);
+}
+
+UIWindow.prototype.drop = function(x,y)
+{
+	// restitute, if there is a parent 
+	if(this.parent)
+	{
+		if(this.x < this.parent.x)
+		{
+			this.setPosition(this.parent.x,this.y);
+		}
+		if(this.y < this.parent.y)
+		{
+			this.setPosition(this.x,this.parent.y);
+		}
+		if(this.x + this.width > this.parent.x + this.parent.width)
+		{
+			this.setPosition(this.parent.x + this.parent.width - this.width,this.y);
+		}
+		if(this.y + this.height > this.parent.y + this.parent.height)
+		{
+			this.setPosition(this.x,this.parent.y + this.parent.height - this.height);
+		}
+	}
 }	
 
 /**
 	MENUBUTTONS
 		QUIT (That's basically it)
  */
-function UITitleBar(menuButton = false)
+function UITitleBar(draggable,menuButton = false)
 {
 	UIElement.call(this,0,0,0,0,"title_bar");
+	this.draggable = draggable;
 	this.attached = null;
 	
 	if(menuButton)
@@ -907,6 +949,44 @@ UITitleBar.prototype.draw = function(context)
 	
 	UIElement.prototype.draw.call(this,context);
 	this.draw_borders(context);
+	
+	// dragging!
+	if(this.draggable)
+	{
+		if(this.mousedown)
+		{
+			if(this.parent)
+			{
+				var dragX = Engine.mouseX - this.mousedown.x + this.predrag_x;
+				var dragY = Engine.mouseY - this.mousedown.y + this.predrag_y;
+				this.parent.drag(dragX,dragY);
+			}
+		}
+	}
+}
+
+UITitleBar.prototype.handle_mousedown = function(mouseX,mouseY)
+{
+	UIElement.prototype.handle_mousedown.call(this,mouseX,mouseY);
+	this.predrag_x = this.x;
+	this.predrag_y = this.y;
+}
+
+UITitleBar.prototype.handle_mouseup = function(mouseX,mouseY)
+{
+	if(this.draggable)
+	{
+		if(this.mousedown)
+		{
+			if(this.parent)
+			{
+				var dragX = mouseX - this.mousedown.x + this.predrag_x;
+				var dragY = mouseY - this.mousedown.y + this.predrag_y;
+				this.parent.drop(dragX,dragY);
+			}
+		}
+	}
+	UIElement.prototype.handle_mouseup.call(this,mouseX,mouseY);
 }
 	
 UITitleBar.prototype.attach = function(parent)
@@ -917,6 +997,11 @@ UITitleBar.prototype.attach = function(parent)
 		this.quit_button.setPosition(this.x + this.width - this.quit_button.width,this.y);
 		this.quit_button.onmouseclick = () => {this.parent.hide()};
 	}
+}
+
+UITitleBar.prototype.setDraggable = function(draggable)
+{
+	this.draggable = draggable;
 }
 
 /**

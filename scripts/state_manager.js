@@ -48,12 +48,20 @@ var State_manager = (
 			start_new_game: function()
 			{
 				var STARTING_MAP_NAME = "map1";
+				var STARTING_CITY = "lancaster";
+				
+				data["world"] = {time: 0, cities: {}};
+				
+				for(var key in Cities)
+				{
+					data["world"].cities[key] = new City(key);
+				}
+				
+				data["world"].cities[STARTING_CITY].purchased_factory = true;
 				
 				data["player"] = {money: 48000
-					,map_name: STARTING_MAP_NAME
-					,map: new Map(Maps[STARTING_MAP_NAME].factory_width
-						,Maps[STARTING_MAP_NAME].factory_height)};
-				data["world"] = {time: 0};
+					,city: data["world"].cities[STARTING_CITY]};
+				
 				data["history"] = {finance: null};
 				data["settings"] = {industry:{autobuy:true}};
 			},
@@ -131,20 +139,3 @@ var State_manager = (
 	}
 )();
 
-
-/**
-	Defined maps that make it easier on saving and loading 
- */
-var Maps = {
-	"map1": {
-		name: "Testing",
-		factory: "map1",
-		skyline_day: "background1_day",
-		skyline_night: "background1_night",
-		width: 800,
-		height: 600,
-		factory_position: {x: 200, y: 200},
-		factory_width: 10,
-		factory_height: 6,
-	},
-}

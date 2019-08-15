@@ -45,7 +45,6 @@ var Reports_handler = (
 				
 				
 				panel.addSubPanel("Finance", financial_tab.panel);
-				console.log(financial_tab_today);
 				// what's a report without records?
 				if(State_manager.get_state("history","finance"))
 				{

@@ -157,6 +157,8 @@ var Time_converter = {
 	NIGHT_TIME: {START: 18, END: 6},
 	DAYS_PER_YEAR: 365,
 	DAYS_PER_LEAPYEAR: 366,
+	// for maths 
+	DAYS_PER_AVERAGE_YEAR: 365.2422,
 	MONTHS:["Jan.","Feb.","Mar.","Apr.","May","June","July","Aug.","Sept.","Oct.","Nov.","Dec."],
 	DAYS_PER_MONTH_YEAR:[31,28,31,30,31,30,31,31,30,31,30,31],
 	DAYS_PER_MONTH_LEAPYEAR:[31,29,31,30,31,30,31,31,30,31,30,31],

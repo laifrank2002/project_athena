@@ -9,11 +9,18 @@
 var Industry_handler = (
 	function()
 	{
+		var DISPLAY_POSITION = {x:0,y:0};
+		var display_width = 800;
+		var display_height = 475;
+		
 		var panel;
+				
 		var current_map;
 		var current_map_name;
 		
-		// components 
+		// components
+		var resource_bar;
+		
 		var toolbar;
 		var palette;
 		var palette_list;
@@ -35,7 +42,7 @@ var Industry_handler = (
 		 */
 		function getMapPosition()
 		{
-			return new Point(panel.x + map_offset.x - viewport.x, panel.y + map_offset.y - viewport.y);
+			return new Point(panel.x + map_offset.x - viewport.x + DISPLAY_POSITION.x, panel.y + map_offset.y - viewport.y + DISPLAY_POSITION.y);
 		}
 		
 		return {
@@ -52,6 +59,12 @@ var Industry_handler = (
 				panel.paint = Industry_handler.draw;
 				
 				// own components
+				resource_bar = new UIWindow(null,null,200,200,true,false);
+				console.log(resource_bar.title_bar);
+				
+				// adding all of the resource bar components
+				panel.addSubElement(resource_bar,10,10);
+				
 				toolbar = new UIPanel(null,null,panel.width,25);
 				panel.addSubElement(toolbar,0,panel.height - 50);
 				
@@ -116,15 +129,14 @@ var Industry_handler = (
 				viewport = new Viewport(0,0,panel.width,panel.height-50);
 				
 				// data
+				current_map_name = State_manager.get_state("player","city").city.map;
 				
-				current_map_name = State_manager.get_state("player","map_name");
-				
-				background_factory = Engine.assets[Maps[current_map_name].factory];
+				background_factory = Engine.assets[Maps[current_map_name].factory_image];
 				background_day = Engine.assets[Maps[current_map_name].skyline_day];
 				background_night = Engine.assets[Maps[current_map_name].skyline_night];
 				
 				map_offset = Maps[current_map_name].factory_position;
-				current_map = State_manager.get_state("player","map");
+				current_map = State_manager.get_state("player","city").factory;
 				
 				settings = State_manager.get_state("settings","industry");
 
@@ -132,8 +144,8 @@ var Industry_handler = (
 			
 			draw: function(context)
 			{
-				var x = panel.x;
-				var y = panel.y;
+				var x = panel.x + DISPLAY_POSITION.x;
+				var y = panel.y + DISPLAY_POSITION.y;
 				
 				var map_position = getMapPosition();
 
@@ -237,8 +249,8 @@ var Industry_handler = (
 			 */
 			handle_mouseclick: function(mouseX, mouseY)
 			{
-				var x = panel.x;
-				var y = panel.y;
+				var x = panel.x + DISPLAY_POSITION.x;
+				var y = panel.y + DISPLAY_POSITION.y;
 
 				if(mouseX >= x 
 					&& mouseY >= y 
@@ -247,10 +259,10 @@ var Industry_handler = (
 				{
 					if(Industry_handler.is_in_map_bounds(mouseX,mouseY))
 					{
+						var current_grid_position = Industry_handler.get_grid_position(mouseX,mouseY);
+						var last_grid_position = Industry_handler.get_grid_position(panel.mousedown.x,panel.mousedown.y);
 						if(!isNaN(currently_selected) && currently_selected !== null)
 						{
-							var current_grid_position = Industry_handler.get_grid_position(mouseX,mouseY);
-							var last_grid_position = Industry_handler.get_grid_position(panel.mousedown.x,panel.mousedown.y);
 							
 							if(current_grid_position.equals(last_grid_position))
 							{
@@ -374,3 +386,20 @@ var Industry_handler = (
 		}
 	}
 )();
+
+/**
+	Defined maps that make it easier on saving and loading 
+ */
+var Maps = {
+	"small_mill_a": {
+		name: "Testing",
+		factory_image: "map1",
+		skyline_day: "background1_day",
+		skyline_night: "background1_night",
+		width: 800,
+		height: 600,
+		factory_position: {x: 200, y: 200},
+		factory_width: 10,
+		factory_height: 6,
+	},
+}

@@ -68,6 +68,7 @@ var Engine = (
 				Inventory_handler.initialize();
 				Industry_handler.initialize();
 				Reports_handler.initialize();
+				City_handler.initialize();
 				
 				Time_handler.initialize();
 				UIHandler.initialize();

@@ -38,6 +38,7 @@ Producer.prototype.types = {
 		price: 0,
 		upkeep: 18,
 		type: "human",
+		skill: "skilled",
 		description: "A humble spinster to turn fiber into thread. 18d/day",
 	},
 	// RR(Research Confirmed)
@@ -57,6 +58,7 @@ Producer.prototype.types = {
 		price: 0,
 		upkeep: 31,
 		type: "human",
+		skill: "skilled",
 		description: "How many weaves can a weaver weave if a weaver could weave wool? 31d/day",
 	},
 	
@@ -75,6 +77,7 @@ Producer.prototype.types = {
 		price: 0,
 		upkeep: 31,
 		type: "human",
+		skill: "skilled",
 		description: "Strong, tough, and covered in tannins. 31d/day",
 	}
 }
