@@ -59,14 +59,39 @@ var Industry_handler = (
 				panel.paint = Industry_handler.draw;
 				
 				// own components
-				resource_bar = new UIWindow(null,null,200,200,true,false);
-				console.log(resource_bar.title_bar);
+				resource_bar = new UIWindow(null,null,800,75,"Resources",true,true);
 				
 				// adding all of the resource bar components
-				panel.addSubElement(resource_bar,10,10);
+				panel.addSubElement(resource_bar,0,0);
 				
 				toolbar = new UIPanel(null,null,panel.width,25);
+				// wrap it in another function in order to establish THIS, this function, as the context
+				var resource_bar_button = new UIButton(25,25,"",() => {resource_bar.show()});
+				resource_bar_button.paint = function(context,x,y)
+				{
+					context.strokeStyle = this.default_colour;
+					context.lineWidth = 3;
+					context.beginPath();
+					context.moveTo(x + 5, y + 5);
+					context.lineTo(x + 5, y + 20);
+					context.lineTo(x + 20, y + 20);
+					context.lineTo(x + 20, y + 5);
+					context.closePath();
+					context.stroke();
+					context.fill();
+					
+					context.lineWidth = 2;
+					context.beginPath();
+					context.moveTo(x + 5, y + 5);
+					context.lineTo(x + 20, y + 20);
+					context.moveTo(x + 20, y + 5);
+					context.lineTo(x + 5, y + 20);
+					context.closePath();
+					context.stroke();
+				}
+				toolbar.addSubElement(resource_bar_button,400,0);
 				panel.addSubElement(toolbar,0,panel.height - 50);
+				
 				
 				palette = new UIPanel(null,null,400,toolbar.height);
 				// adding all of the buttons for the palette 
@@ -119,8 +144,26 @@ var Industry_handler = (
 				};
 				palette.addSubElement(cursor_button,0,0);
 				
-				toolbar.addSubElement(palette);
+				var delete_button = new UIButton(25,25,"");
+				delete_button.paint = function(context,x,y)
+				{
+					var indent = UIElement.prototype.indent_size;
+					
+					context.drawImage(Engine.assets["trashbin"]
+						,x
+						,y
+						,this.width
+						,this.height)
+				}
+				delete_button.onmouseclick = function()
+				{
+					currently_selected = "delete";
+				};
+				palette.addSubElement(delete_button,75,0);
 				
+				// palette add to toolbar
+				toolbar.addSubElement(palette);
+				// status bar
 				statusbar = new UIPanel(null,null,panel.width,25);
 				statusbar_text = new UILabel(`...`,"left");
 				statusbar.addSubElement(statusbar_text,5,5);
@@ -129,14 +172,15 @@ var Industry_handler = (
 				viewport = new Viewport(0,0,panel.width,panel.height-50);
 				
 				// data
-				current_map_name = State_manager.get_state("player","city").city.map;
+				current_map_name = State_manager.get_state("player","map_name");
 				
 				background_factory = Engine.assets[Maps[current_map_name].factory_image];
 				background_day = Engine.assets[Maps[current_map_name].skyline_day];
 				background_night = Engine.assets[Maps[current_map_name].skyline_night];
 				
 				map_offset = Maps[current_map_name].factory_position;
-				current_map = State_manager.get_state("player","city").factory;
+				current_map = State_manager.get_state("player","map");
+				current_map.initialize();
 				
 				settings = State_manager.get_state("settings","industry");
 
@@ -188,7 +232,7 @@ var Industry_handler = (
 				current_map.draw(context,map_position.x,map_position.y);
 				
 				// now draw thy mouse shadow
-				if(!isNaN(currently_selected))
+				if(currently_selected !== null)
 				{
 					// a further check is required in the case of deselect
 					var image;
@@ -200,10 +244,32 @@ var Industry_handler = (
 							image = Engine.assets[Producer.prototype.types[palette_list[currently_selected]].image];
 						}
 					}
-					
-					if(producer)
+					else 
 					{
+						if(currently_selected === "query")
+						{
+							image = Engine.assets["question_mark"];
+						}
+						else if (currently_selected === "move")
+						{
+							image = Engine.assets["cursor_move"];
+						}
+						else if (currently_selected === "delete")
+						{
+							image = Engine.assets["trashbin"];
+						}
+					}
+					
+					if(image)
+					{
+						var width = 1;
+						var height = 1;
 						context.globalAlpha = 0.5;
+						if(producer)
+						{
+							width = producer.width;
+							height = producer.height;
+						}
 						
 						if(Industry_handler.is_in_map_bounds(Engine.mouseX,Engine.mouseY))
 						{
@@ -211,36 +277,44 @@ var Industry_handler = (
 							context.drawImage(image
 								,map_position.x + grid_position.x * current_map.TILE_WIDTH
 								,map_position.y + grid_position.y * current_map.TILE_HEIGHT
-								,current_map.TILE_WIDTH * producer.width
-								,current_map.TILE_HEIGHT * producer.height);
+								,current_map.TILE_WIDTH * width
+								,current_map.TILE_HEIGHT * height);
 						}
 						else 
 						{
 							context.drawImage(image
 								,Engine.mouseX
 								,Engine.mouseY
-								,current_map.TILE_WIDTH * producer.width
-								,current_map.TILE_HEIGHT * producer.height);
+								,current_map.TILE_WIDTH * width
+								,current_map.TILE_HEIGHT * height);
 						}
 						context.globalAlpha = 1.0;
 					}
-					
 				}
-				
 			},
 			
 			tick: function()
 			{
 				current_map.tick();
+				// get producers 
+				var producers = current_map.getProducers();
+				for(var key in producers)
+				{
+					
+				}
+				// it turned out that with the amount of computations that we have to do, it is more efficient to update per tick than to update per transaction.
+				Inventory_handler.update();
 			},
 			
 			// handle the day 
 			close_day: function()
 			{
-				// update stats
-				
-				// pay your employees
-				current_map.close_day();
+				// naive paying
+				var producers = current_map.getProducers();
+				for(var key in producers)
+				{
+					State_manager.add_state("player","money",-Producer.prototype.types[key].upkeep * producers[key].count);
+				}
 			},
 			/**
 				Handles the mouseclick for EVERYTHING
@@ -261,34 +335,36 @@ var Industry_handler = (
 					{
 						var current_grid_position = Industry_handler.get_grid_position(mouseX,mouseY);
 						var last_grid_position = Industry_handler.get_grid_position(panel.mousedown.x,panel.mousedown.y);
-						if(!isNaN(currently_selected) && currently_selected !== null)
+						
+						if(current_grid_position.equals(last_grid_position))
 						{
-							
-							if(current_grid_position.equals(last_grid_position))
+							if(!isNaN(currently_selected) && currently_selected !== null)
 							{
 								Industry_handler.buy_and_plop(palette_list[currently_selected]
 									,current_grid_position.x
 									,current_grid_position.y);
-								if(!Engine.keysPressed["shift"]) Industry_handler.deselect_palette();
+									
+							}
+							else if (currently_selected === "query")
+							{
 								
 							}
-							else 
+							else if(currently_selected === "move")
 							{
-								if(!Engine.keysPressed["shift"]) Industry_handler.deselect_palette();
+								
 							}
-						}
-						else if (currently_selected === "query")
-						{
+							else if(currently_selected === "delete")
+							{
+								Industry_handler.unplop(current_grid_position.x,current_grid_position.y);
+							}
 							
+							if(!Engine.keysPressed["shift"]) Industry_handler.deselect_palette();
 						}
-						else if(currently_selected === "move")
+						else 
 						{
-							
+							if(!Engine.keysPressed["shift"]) Industry_handler.deselect_palette();
 						}
-						else if(currently_selected === "delete")
-						{
-							
-						}
+						
 					}
 					else 
 					{
@@ -322,9 +398,19 @@ var Industry_handler = (
 					return false;
 				}
 			},
-			
 			// unplop
-			
+			unplop: function(x,y)
+			{
+				var tile = current_map.getTile(x,y);
+				if(tile.occupied)
+				{
+					if(current_map.unplopObject(tile.occupied))
+					{
+						return true;
+					}
+				}
+				return false;
+			},
 			// for buttons 
 			set_palette_selected: function(index)
 			{

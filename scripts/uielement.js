@@ -168,6 +168,33 @@ UIElement.prototype.setPosition = function(x,y)
 }
 
 /**
+	Sets RELATIVELY
+ */
+UIElement.prototype.setRelativePosition = function(x,y)
+{
+	this.relative_x = x;
+	this.relative_y = y;
+	
+	if(this.parent)
+	{
+		this.x = this.relative_x + this.parent.x;
+		this.y = this.relative_y + this.parent.y;
+	}
+	else 
+	{
+		this.x = x;
+		this.y = y;
+	}
+	
+	if(this.children)
+	{
+		this.children.forEach(child =>
+			{
+				child.setRelativePosition(child.relative_x,child.relative_y);
+			});
+	}
+}
+/**
 	Moves without actually changing the relative_x and relative_y. Useful for SCROLL.
  */
 UIElement.prototype.setTemporaryPosition = function(x,y)
@@ -325,7 +352,7 @@ UIElement.prototype.unfocus = function()
 }
 
 // a button typed element 
-function UIButton (width,height,text,onmouseclick)
+function UIButton (width,height,text = "",onmouseclick)
 {
 	UIElement.call(this,null,null,width,height,"button",onmouseclick);
 	
@@ -489,6 +516,8 @@ UIPanel.prototype.draw = function(context)
 	context.fill();
 	context.clip();
 	this.draw_borders(context);
+	
+	if(this.paint) this.paint(context,this.x,this.y);
 	
 	// draw children
 	this.children.forEach(child =>
@@ -844,11 +873,11 @@ UIScrollBarComponentBar.prototype.draw = function(context)
 	STATUS BAR 
  */
 
-function UIWindow(x,y,width,height,draggable = false, menuButton = false)
+function UIWindow(x,y,width,height,text,draggable = false, menuButton = false)
 {
 	UIElement.call(this,x,y,width,height,"window");
 	// title
-	this.title_bar = new UITitleBar(draggable,menuButton);
+	this.title_bar = new UITitleBar(text,draggable,menuButton);
 	UIElement.prototype.addSubElement.call(this,this.title_bar,0,0);
 	this.title_bar.attach(this);
 	
@@ -903,11 +932,15 @@ UIWindow.prototype.drop = function(x,y)
 	MENUBUTTONS
 		QUIT (That's basically it)
  */
-function UITitleBar(draggable,menuButton = false)
+function UITitleBar(text = "",draggable,menuButton = false)
 {
 	UIElement.call(this,0,0,0,0,"title_bar");
+	this.text = text;
 	this.draggable = draggable;
 	this.attached = null;
+	
+	this.title = new UILabel(text,"center");
+	this.addSubElement(this.title,0,0);
 	
 	if(menuButton)
 	{
@@ -992,6 +1025,9 @@ UITitleBar.prototype.handle_mouseup = function(mouseX,mouseY)
 UITitleBar.prototype.attach = function(parent)
 {
 	this.resize(parent.width,this.HEIGHT);	
+	
+	this.title.setRelativePosition(this.width/2,this.height/2);
+	
 	if(this.quit_button)
 	{
 		this.quit_button.setPosition(this.x + this.width - this.quit_button.width,this.y);

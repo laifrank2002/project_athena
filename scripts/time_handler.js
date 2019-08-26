@@ -90,13 +90,14 @@ var Time_handler = (
 
 							// tick everything else 
 							Industry_handler.tick();
-						
+							
 							// handle the day 
 							if(Time_handler.get_hour() % 24 === 0)
 							{
 								var day = Time_handler.get_day();
 								Industry_handler.close_day(day);
 								Reports_handler.close_day(day);
+								Money_lender.close_day(day);
 							}
 						}					
 					}

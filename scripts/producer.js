@@ -10,9 +10,10 @@ function Producer(type_key)
 	}
 	
 	MapObject.call(this,this.types[type_key].width,this.types[type_key].height);
+	this.type_key = type_key;
 	this.type = this.types[type_key];
 	this.image = Engine.assets[this.type.image];
-	this.production_option = 0;
+	this.production_option = Object.keys(this.type.production)[0];
 }
 
 Producer.prototype = Object.create(MapObject.prototype);
@@ -29,12 +30,12 @@ Producer.prototype.types = {
 		image: "spinster",
 		icon: "spinster",
 		// different options of production
-		production: [
-			{name: "Cotton -> Cotton Thread"
+		production: {
+			"thread1": {name: "Cotton -> Cotton Thread"
 			,rate: 0.15
 			,input: {"cotton":1}
 			,output: {"cotton_thread":2}},
-		],
+		},
 		price: 0,
 		upkeep: 18,
 		type: "human",
@@ -49,12 +50,12 @@ Producer.prototype.types = {
 		height: 1,
 		image: "weaver",
 		icon: "weaver",
-		production: [
-			{name: "Cotton Thread -> Cotton Cloth"
+		production: {
+			"cloth1": {name: "Cotton Thread -> Cotton Cloth"
 			,rate: 0.06
 			,input: {"cotton_thread":1}
 			,output: {"cotton_cloth":1}},
-		],
+		},
 		price: 0,
 		upkeep: 31,
 		type: "human",
@@ -68,12 +69,12 @@ Producer.prototype.types = {
 		height: 1,
 		image: "tanner",
 		icon: "tanner_icon",
-		production: [
-			{name: "Hides -> Leather"
+		production: {
+			"leather1": {name: "Hides -> Leather"
 			,rate: 0.04
 			,input: {"hides":1}
 			,output: {"leather":1}},
-		],
+		},
 		price: 0,
 		upkeep: 31,
 		type: "human",
@@ -101,9 +102,10 @@ Producer.prototype.draw = function(context,x,y)
 	}
 }
 
-/**
+/*
 	TODO
-	DEPRECATE BY CENTRALIZING BY CATEGORIES
+	DEPRECATE BY CENTRALIZING THROUGH CATEGORIES
+	ALSO PRODUCTION OPTIONS
  */
 Producer.prototype.tick = function()
 {
@@ -116,34 +118,28 @@ Producer.prototype.tick = function()
 	for(key in production.input)
 	{
 		// or, if autobuy is on...
-		if(Inventory.get_item(key).count < production.input[key] * rate)
+		if(Inventory_handler.inventory.getItem(key).count < production.input[key] * rate)
 		{
 			if(Industry_handler.settings.autobuy)
 			{
-				var missing_amount = production.input[key] * rate - Inventory.get_item(key).count;
-				Inventory_handler.buy_item(key, missing_amount, Inventory.get_item(key).price);
+				var missing_amount = production.input[key] * rate - Inventory_handler.inventory.getItem(key).count;
+				Inventory_handler.buy_item(key, missing_amount, Inventory_handler.inventory.getItem(key).price);
 			}
 		}
 		
-		limited_throughput_rate = Math.min(limited_throughput_rate,Inventory.get_item(key).count / (production.input[key] * rate))
+		limited_throughput_rate = Math.min(limited_throughput_rate,Inventory_handler.inventory.getItem(key).count / (production.input[key] * rate))
 	}
 	rate = rate * limited_throughput_rate;
 	
 	// now start subtracting
 	for(key in production.input)
 	{
-		Inventory.subtract_amount(key,production.input[key] * rate);
+		Inventory_handler.inventory.addAmount(key,-production.input[key] * rate);
 	}
 	
 	// and then producing!
 	for(key in production.output)
 	{
-		Inventory.add_amount(key,production.output[key] * rate);
+		Inventory_handler.inventory.addAmount(key,production.output[key] * rate);
 	}
-}
-
-Producer.prototype.close_day = function()
-{
-	// naive paying
-	State_manager.add_state("player","money",-this.type.upkeep);
 }

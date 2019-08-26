@@ -37,10 +37,46 @@ function Map(width,height)
 	);
 	
 	this.objects = [];
+	
+	// non-generic
+	this.producers = {};
+	this.initialize();
 }
 
 Map.prototype.TILE_WIDTH = 32;
 Map.prototype.TILE_HEIGHT = 32;
+
+/**
+	Makes initialization easier, and 
+	On savings/loadings, in case we added new producers
+	
+	That means this must be LOAD SAFE. As in, if it detects any previous data, will not overide anything.
+ */
+Map.prototype.initialize = function()
+{
+	var producers = Producer.prototype.types;
+	for(var key in producers)
+	{
+		var producer = this.producers[key];
+		if(producer)
+		{
+			// add other properties
+			// TODO
+		}
+		else 
+		{
+			this.producers[key] = {count:0, options:{}};
+			
+			var productions = Producer.prototype.types[key].production;
+			
+			for(var option in productions)
+			{
+				this.producers[key].options[option] = {count: 0};
+				//production[option];
+			}
+		}
+	}
+}
 
 Map.prototype.draw = function(context,x=0,y=0)
 {
@@ -63,11 +99,6 @@ Map.prototype.draw = function(context,x=0,y=0)
 Map.prototype.tick = function()
 {
 	this.objects.forEach(object => object.tick());
-}
-
-Map.prototype.close_day = function()
-{
-	this.objects.forEach(object => object.close_day());
 }
 
 Map.prototype.plopObject = function(object, x=0, y=0)
@@ -127,20 +158,93 @@ Map.prototype.unplopObject = function(object)
 	
 	var occupiedTiles = object.occupiedTiles;
 	if(!object.unplop()) return false;
+	
+	// since it is all clear, then proceed and set everything
 	occupiedTiles.forEach(tile => tile.clearOccupied());
 	object.occupiedTiles = null;
+	this.removeObject(object);
 	return true;
 }
 
 Map.prototype.addObject = function(object)
 {
 	this.objects.push(object);
+	// producers
+	if(object.type_key)
+	{
+		if(object.production_option)
+		{
+			this.addProducer(object.type_key,object.production_option);
+		}
+	}
 }
 
 Map.prototype.removeObject = function(object)
 {
 	object.active = false;
 	this.objects = this.objects.filter(object => object.active);
+	// producers
+	if(object.type_key)
+	{
+		if(object.production_option)
+		{
+			this.removeProducer(object.type_key,object.production_option);
+		}
+	}
+}
+
+Map.prototype.getProducers = function()
+{
+	return this.producers;
+}
+
+Map.prototype.getProducer = function(type)
+{
+	if(!this.producers[type])
+	{
+		Engine.log(`Map.getProducer: producer ${type} does not exist.`);
+		return null;
+	}
+	
+	return this.producers[type];
+}
+
+Map.prototype.addProducer = function(type,option)
+{
+	if(!this.producers[type])
+	{
+		Engine.log(`Map.addProducer: producer ${type} does not exist.`);
+		return false;
+	}
+	
+	if(!this.producers[type].options[option])
+	{
+		Engine.log(`Map.addProducer: producer ${type}'s production option ${option} does not exist.`);
+		return false;
+	}
+	
+	this.producers[type].count++;
+	this.producers[type].options[option].count++;
+	return true;
+}
+
+Map.prototype.removeProducer = function(type,option)
+{
+	if(!this.producers[type])
+	{
+		Engine.log(`Map.removeProducer: producer ${type} does not exist.`);
+		return false;
+	}
+	
+	if(!this.producers[type].options[option])
+	{
+		Engine.log(`Map.addProducer: producer ${type}'s production option ${option} does not exist.`);
+		return false;
+	}
+	
+	this.producers[type].count--;
+	this.producers[type].options[option].count--;
+	return true;
 }
 
 Map.prototype.getTile = function(x,y)
@@ -243,11 +347,6 @@ MapObject.prototype.draw = function(context,x,y)
 }
 
 MapObject.prototype.tick = function()
-{
-	
-}
-
-MapObject.prototype.close_day = function()
 {
 	
 }

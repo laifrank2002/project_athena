@@ -57,10 +57,14 @@ var State_manager = (
 					data["world"].cities[key] = new City(key);
 				}
 				
-				data["world"].cities[STARTING_CITY].purchased_factory = true;
+				data["world"].cities[STARTING_CITY];//TODO, add property
 				
 				data["player"] = {money: 48000
-					,city: data["world"].cities[STARTING_CITY]};
+					,city: data["world"].cities[STARTING_CITY]
+					,map_name: data["world"].cities[STARTING_CITY].real_estate[0].map_name
+					,map: data["world"].cities[STARTING_CITY].real_estate[0].factory
+					,credit_rating: "NR"
+					,loaned_amount: 0};
 				
 				data["history"] = {finance: null};
 				data["settings"] = {industry:{autobuy:true}};

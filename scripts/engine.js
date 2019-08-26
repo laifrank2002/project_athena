@@ -63,7 +63,8 @@ var Engine = (
 				
 				// helper initializing
 				State_manager.initialize();
-				Inventory.initialize();
+				
+				Money_lender.initialize();
 				// initialize tabs before the main handler, always!
 				Inventory_handler.initialize();
 				Industry_handler.initialize();

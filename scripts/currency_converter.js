@@ -42,10 +42,18 @@ var Currency_converter = {
 				break;
 		}
 		
-		var pounds = Math.floor(amount_in_pence / (Currency_converter.POUNDS_TO_PENCE));
-		var shillings = Math.floor((amount_in_pence - pounds * Currency_converter.POUNDS_TO_PENCE) / Currency_converter.SHILLINGS_TO_PENCE);
-		var pence = Math.round((amount_in_pence % (Currency_converter.POUNDS_TO_PENCE)) % Currency_converter.SHILLINGS_TO_PENCE);
+		var pounds = Math.floor(Math.abs(amount_in_pence) / (Currency_converter.POUNDS_TO_PENCE));
+		var shillings = Math.floor((Math.abs(amount_in_pence) - pounds * Currency_converter.POUNDS_TO_PENCE) / Currency_converter.SHILLINGS_TO_PENCE);
+		var pence = Math.round((Math.abs(amount_in_pence) % (Currency_converter.POUNDS_TO_PENCE)) % Currency_converter.SHILLINGS_TO_PENCE);
 		
-		return `${Currency_converter.POUND_SIGN}${pounds} ${shillings}s ${pence}d`; 
+		if(amount_in_pence >= 0)
+		{
+			return `${Currency_converter.POUND_SIGN}${pounds} ${shillings}s ${pence}d`; 
+		}
+		else 
+		{
+			return `-${Currency_converter.POUND_SIGN}${pounds} ${shillings}s ${pence}d`; 
+		}
+		
 	},
 }
