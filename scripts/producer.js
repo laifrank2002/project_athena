@@ -109,6 +109,8 @@ Producer.prototype.draw = function(context,x,y)
  */
 Producer.prototype.tick = function()
 {
+	// get time of day 
+	if(Time_handler.get_day_stage() === "night") return;
 	// production
 	var production = this.type.production[this.production_option];
 	var rate = production.rate;

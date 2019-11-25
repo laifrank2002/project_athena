@@ -2,6 +2,12 @@ var City_handler = (
 	function()
 	{
 		var panel;
+		var title;
+		
+		var city_location_panels;
+		var city_location_buttons;
+		var city_location_buttons_panel;
+		
 		var cities;
 		
 		var background_image;
@@ -10,16 +16,60 @@ var City_handler = (
 			get panel() {return panel},
 			get cities() {return cities},
 			
+			get city() {return State_manager.get_state("player","city");},
+			
+			// this mess of a thing is due to UI programming. Blame it on the UI.
 			initialize: function()
 			{
+				// init
 				panel = new UIPanel(0,0,800,550);
 				panel.paint = City_handler.draw;
+				// add in own children first that need to be displayed first.
+				// city location_panels
+				city_location_panels = [];
 				
-				// in case we add new cities, also shortens state_manager.start_new_game
+				var money_lender = Money_lender_handler;
+				money_lender.hide();
+				panel.addSubElement(money_lender,100,100);
+				city_location_panels.push(money_lender);
+				
+				var city_hall = City_hall_handler;
+				city_hall.hide();
+				panel.addSubElement(city_hall,0,0);
+				city_location_panels.push(city_hall);
+				
+				// self
+				title = new UILabel("City","center");
+				title.font_size = 30;
+				panel.addSubElement(title,panel.width/2,50);
+				
+				// buttons
+				city_location_buttons_panel = new UIPanel(0,0,200,400);
+				panel.addSubElement(city_location_buttons_panel,panel.width/2 - city_location_buttons_panel.width/2,100);
+				
+				city_location_buttons = {};
+				
+				city_location_buttons["city_hall"] = (new UIButton(150,25,"City Hall",()=>city_hall.show()));
+				city_location_buttons["properties"] = (new UIButton(150,25,"Properties",null));
+				city_location_buttons["money_lender"] = (new UIButton(150,25,"Market and Contracts",null));
+				city_location_buttons["real_estate_agent"] = (new UIButton(150,25,"Real Estate Agent",null));
+				city_location_buttons["market"] = (new UIButton(150,25,"Money Lender's",()=>money_lender.show()));
+				city_location_buttons["port"] = (new UIButton(150,25,"Port",null));
+				//city_location_buttons["properties"] = (new UIButton(150,25,"Properties",null));
+				
+				var count = 0;
+				for(var key in city_location_buttons)
+				{
+					city_location_buttons_panel.addSubElement(city_location_buttons[key],25,25+50*count);
+					count++;
+				}
+				
+				// now add in all the cities we need 
 				cities = State_manager.get_state("world","cities");
 				
-				for(var key in Cities)
+				for(var key in Defined_cities)
 				{
+					// in case we add new cities,
 					if(!cities[key])
 					{
 						cities[key] = new City(key);
@@ -27,6 +77,30 @@ var City_handler = (
 				}
 				
 				background_image = Engine.assets[State_manager.get_state("player","city").city.map];
+				City_handler.change_city(City_handler.city);
+			},
+			
+			change_city: function(city)
+			{
+				title.setText(city.name);
+				// add in all the stuff to the panel! or rather show 'em
+				for(var location_key in city_location_buttons)
+				{
+					city_location_buttons[location_key].hide();
+				}
+				
+				city.locations.forEach(location_key =>
+				{
+					if(city_location_buttons[location_key])
+					{
+						city_location_buttons[location_key].show();
+					}
+					else 
+					{
+						Engine.log(`Property '${location_key}' is not recognized.`);
+					}
+				});
+				
 			},
 			
 			draw: function(context)
@@ -38,6 +112,23 @@ var City_handler = (
 						,panel.y);
 				}
 			},
+			
+			close_day: function(day)
+			{
+				for(var index = 0; index < cities.length; index++)
+				{
+					cities[index].close_day(day);
+				}
+			},
+			
+			close_week: function(week)
+			{
+				for(var index = 0; index < cities.length; index++)
+				{
+					cities[index].close_week(week);
+				}
+			}
+			
 		}
 	}
 )();
@@ -49,8 +140,8 @@ var City_handler = (
  */
 function City(city_key)
 {
-	var city = Cities[city_key];
-	
+	var city = Defined_cities[city_key];
+	this.key = city_key;
 	this.city = city;
 	
 	this.name = city.name;
@@ -60,27 +151,38 @@ function City(city_key)
 	// each warehouse only adds to this blank inventory
 	this.warehouse = new Inventory(0);
 	// city's inventory
-	this.market = new Market();
+	this.market = new Market(this);
 	
 	
 	// owned properties 
 	this.real_estate = [];
 	this.city.prebuilt_realestate.forEach(key =>
 		{
-			this.real_estate.push(new Real_estate(key));
+			var real_estate = new Real_estate(key);
+			this.real_estate.push(real_estate);
+			this.warehouse.addCapacity(real_estate.capacity);
 		}
 	);
+	
+	// locations 
+	this.locations = city.locations;
 }
 
-City.prototype.tick = function()
+City.prototype.close_day = function(day)
 {
 	this.population *= Math.pow(Math.E,this.city.growth_rate*(1/Time_converter.DAYS_PER_AVERAGE_YEAR));
+	//this.market.close_day(day);
+}
+
+City.prototype.close_week = function(week)
+{
+	this.market.close_week(week);
 }
 
 /**
-	Max buildings = sqrt(CITIES.population)/100;
+	Max locations = sqrt(CITIES.population)/100;
  */
-var Cities = {
+var Defined_cities = {
 	"lancaster": {
 		name: "Lancaster",
 		county: "Lancashire",
@@ -88,6 +190,7 @@ var Cities = {
 		growth_rate: 0.0081,
 		map: "city1",
 		unlock_year: 1800, 
+		locations: ["city_hall","properties","money_lender","real_estate_agent","market","port"],
 		prebuilt_realestate:["small_mill_a"],
 		
 		initial_deals:[{"key":"cotton","amount":100}],
@@ -100,6 +203,8 @@ var Cities = {
 		growth_rate:0.0306,
 		map: "city1",
 		unlock_year: 1800, 
+		locations: ["city_hall","properties","money_lender","real_estate_agent","market","port"],
+		
 		prebuilt_realestate:[],
 	},
 }
@@ -117,12 +222,16 @@ function Real_estate(type)
 	this.type = type;
 	this.building = this.buildings[type];
 	
+	this.capacity = 0;
+	if(this.building.capacity) this.capacity = this.building.capacity;
+	
 	if(this.building.type === "factory")
 	{
 		this.map = Maps[this.building.map];
 		this.map_name = this.building.map;
-		this.factory = new Map(this.map.factory_width, this.map.factory_height);
+		this.factory = new Factory(this.building.map);
 	}
+	
 }
 
 Real_estate.prototype.buildings = {
@@ -142,53 +251,3 @@ Real_estate.prototype.buildings = {
 		"capacity": 10000,
 	},
 };
-
-/**
-	Imports and Export deals
-		types && fees (depending on)
-			IMPORT FOREIGN
-				25%
-			EXPORT FOREIGN
-				15%
-			IMPORT DOMESTIC
-				5%
-			EXPORT DOMESTIC
-				5%
- */
-function City_deal(resource, amount, type, origin)
-{
-	
-}
-
-City_deal.prototype.types = {
-	"domestic_import": {
-		fee: 0.25,
-	},
-	"domestic_export": {
-		fee: 0.15,
-	},
-	"foreign_import": {
-		fee: 0.05,
-	},
-	"foreign_export": {
-		fee: 0.05,
-	},
-};
-
-/**
-	Trading partners
- */
-function Trading_partner()
-{
-	
-}
-
-/**
-	Markets, which conform to prices using supply and demand.
-	Not only that, but it also handles money!
- */
-function Market()
-{
-	this.money = 0;
-	this.inventory = new Inventory(0,true);
-}

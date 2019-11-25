@@ -8,9 +8,9 @@ var Engine = (
 		
 		var CURRENCY_SYMBOL = "\u00a3";
 		
-		var _log = true;
-		var _warn = true;
-		var _debug = false;
+		var logging = true;
+		var warning = true;
+		var debugging = false;
 		var lastTime = null;
 		var paused = true;
 		
@@ -21,7 +21,7 @@ var Engine = (
 		var assets = {};
 		var settings = {};
 		
-		var mousePosition = {x:0, y:0};
+		var mousePosition = new Point(0,0);
 		var keysPressed = {
 			"up":false,	
 			"down":false,	
@@ -34,7 +34,6 @@ var Engine = (
 			
 			get assets() {return assets;},
 			get context() {return context;},
-			get _debug() {return _debug;},
 			
 			get keysPressed() {return keysPressed;},
 			
@@ -71,6 +70,9 @@ var Engine = (
 				Reports_handler.initialize();
 				City_handler.initialize();
 				
+				Money_lender_handler.initialize();
+				City_hall_handler.initialize();
+				
 				Time_handler.initialize();
 				UIHandler.initialize();
 				// listeners
@@ -86,7 +88,7 @@ var Engine = (
 			
 			log: function(message)
 			{
-				if(_log)
+				if(logging)
 				{
 					console.log(message);
 				}
@@ -94,7 +96,7 @@ var Engine = (
 			
 			warn: function(message)
 			{
-				if(_warn)
+				if(warning)
 				{
 					console.warn(message);
 				}

@@ -32,6 +32,25 @@ Inventory.prototype.setCapacity = function(capacity)
 		this.capacity = capacity;
 	}
 }
+
+Inventory.prototype.addCapacity = function(capacity)
+{
+	if(capacity > 0)
+	{
+		this.capacity += capacity;
+	}
+}
+
+Inventory.prototype.removeCapacity = function(capacity)
+{
+	if(capacity > 0)
+	{
+		this.capacity -= capacity;
+	}
+	
+	if(this.capacity < 0) this.capacity = 0;
+}
+
 // todo, migrate in order for a more friendly market solution
 
 Inventory.prototype.buyItem = function(name, amount, price)
@@ -172,6 +191,15 @@ Inventory.prototype.recalculate_utilized_capacity = function()
 	{
 		this.utilized_capacity += this.items[key].count;
 	}
+	
+}
+
+/**
+	An item.
+	Pure data.
+ */
+function Item()
+{
 	
 }
 

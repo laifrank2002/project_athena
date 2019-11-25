@@ -75,6 +75,7 @@ var Time_handler = (
 				panel.addSubElement(time_display,75+5,5);
 			},
 			
+			// turns intangible REAL time into tangible TICK time.
 			tick: function(lapse)
 			{
 				if(!paused)
@@ -92,12 +93,9 @@ var Time_handler = (
 							Industry_handler.tick();
 							
 							// handle the day 
-							if(Time_handler.get_hour() % 24 === 0)
+							if(Time_handler.get_hour() === 0)
 							{
-								var day = Time_handler.get_day();
-								Industry_handler.close_day(day);
-								Reports_handler.close_day(day);
-								Money_lender.close_day(day);
+								Time_handler.close_day(Time_handler.get_day());
 							}
 						}					
 					}
@@ -107,6 +105,25 @@ var Time_handler = (
 						speed = 1;
 					}
 				}
+			},
+			
+			close_day: function(day)
+			{
+				Industry_handler.close_day(day);
+				Reports_handler.close_day(day);
+				City_handler.close_day(day);
+				Money_lender.close_day(day);
+				
+				if(day % 7 === 0)
+				{
+					Time_handler.close_week(Time_handler.get_week());
+				}
+			},
+			
+			close_week: function(week)
+			{
+				City_handler.close_week(week);
+				Engine.log(`Week ${week} has passed!`);
 			},
 			
 			pause: function()
@@ -135,6 +152,11 @@ var Time_handler = (
 			get_day: function()
 			{
 				return Time_converter.getDay(State_manager.get_state("world","time"));
+			},
+			
+			get_week: function()
+			{
+				return Time_converter.getWeek(State_manager.get_state("world","time"));
 			},
 			
 			get_day_stage: function()
@@ -252,6 +274,17 @@ var Time_converter = {
 	{
 		var day = Math.floor(time / Time_converter.HOURS_PER_DAY);
 		return day;
+	},
+	
+	getWeek: function(time)
+	{
+		var week = Math.floor(time / Time_converter.HOURS_PER_DAY / Time_converter.WEEKDAYS.length);
+		return week;
+	},
+	
+	getMonth: function(time)
+	{
+		
 	},
 	
 	getDayStage: function(time)

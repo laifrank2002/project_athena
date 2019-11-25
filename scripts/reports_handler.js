@@ -64,7 +64,7 @@ var Reports_handler = (
 			{
 				var cash = State_manager.get_state("player","money");
 				var inventory = Inventory_handler.get_inventory_value();
-				var debt = Money_lender.get_total_debts_value();
+				var debt = Money_lender.loaned_amount;
 				var net_value = cash + inventory - debt;
 				var wages = Industry_handler.get_total_wages();
 				
@@ -99,7 +99,7 @@ var Reports_handler = (
 					
 					financial_tab_day.cash.setText(`Cash: ${Currency_converter.displayFull(current_data.cash)}`);
 					financial_tab_day.inventory.setText(`Inventory: ${Currency_converter.displayFull(current_data.inventory)}`);
-					financial_tab_day.inventory.setText(`Debt: ${Currency_converter.displayFull(current_data.debt)}`);
+					financial_tab_day.debts.setText(`Debt: ${Currency_converter.displayFull(current_data.debt)}`);
 					financial_tab_day.net_value.setText(`Net Value: ${Currency_converter.displayFull(current_data.net_value)}`);
 					financial_tab_day.wages.setText(`Wages: ${Currency_converter.displayFull(current_data.wages)}`);
 				}

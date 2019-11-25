@@ -14,9 +14,10 @@ var Industry_handler = (
 		var display_height = 475;
 		
 		var panel;
-				
+		
+		var factory;
+		
 		var current_map;
-		var current_map_name;
 		
 		// components
 		var resource_bar;
@@ -32,6 +33,7 @@ var Industry_handler = (
 		var background_day;
 		var background_night;
 		var map_offset;
+		
 		var viewport;
 		
 		var settings = {};
@@ -172,13 +174,13 @@ var Industry_handler = (
 				viewport = new Viewport(0,0,panel.width,panel.height-50);
 				
 				// data
-				current_map_name = State_manager.get_state("player","map_name");
+				factory = State_manager.get_state("player","factory");
+								
+				background_factory = Engine.assets[factory.background_image];
+				background_day = Engine.assets[factory.skyline_day_image];
+				background_night = Engine.assets[factory.skyline_night_image];
 				
-				background_factory = Engine.assets[Maps[current_map_name].factory_image];
-				background_day = Engine.assets[Maps[current_map_name].skyline_day];
-				background_night = Engine.assets[Maps[current_map_name].skyline_night];
-				
-				map_offset = Maps[current_map_name].factory_position;
+				map_offset = factory.factory_position;
 				current_map = State_manager.get_state("player","map");
 				current_map.initialize();
 				
@@ -381,7 +383,7 @@ var Industry_handler = (
 				if(State_manager.get_state("player","money") >= Producer.prototype.types[producer_name].price)
 				{
 					var producer = new Producer(producer_name);
-					if(current_map.plopObject(producer,x,y))
+					if(current_map.plopProducer(producer,x,y))
 					{
 						State_manager.add_state("player","money",-Producer.prototype.types[producer_name].price);
 						return true;
@@ -404,7 +406,7 @@ var Industry_handler = (
 				var tile = current_map.getTile(x,y);
 				if(tile.occupied)
 				{
-					if(current_map.unplopObject(tile.occupied))
+					if(current_map.unplopProducer(tile.occupied))
 					{
 						return true;
 					}
@@ -433,9 +435,7 @@ var Industry_handler = (
 			// for data
 			get_total_wages: function()
 			{
-				var total_wages = 0;
-				current_map.getObjects().forEach(object => {if(object.type){ total_wages += object.type.upkeep}});
-				return total_wages;
+				return factory.getTotalWages();
 			},
 			
 			/* UTILITY */

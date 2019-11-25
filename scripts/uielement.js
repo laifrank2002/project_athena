@@ -2,7 +2,7 @@
 	****UI Element Documentation****
 	function UIElement(x,y,width,height,type = "generic",onmouseclick = null)
 	
-	function UIWindow(x,y,width,height,draggable = false, menuButton = false)
+	function UIWindow(x,y,width,height,title = "",draggable = false, menuButton = false)
 	
 	function UIPanel (x,y,width,height)
 	function UITabbedPanel (x,y,width,height)
@@ -39,13 +39,27 @@ function UIElement(x,y,width,height,type = "generic",onmouseclick = null)
 	this.hidden = false;
 	this.focused = false;
 }
-UIElement.prototype.indent_size = 2;
-UIElement.prototype.default_colour = "#dfe8f5";
-UIElement.prototype.darker_colour = "#bacde8";
-UIElement.prototype.lighter_colour = "#ebf2fc";
+
+// defined colours and settings. THESE are what you CAN play around with.
+UIElement.prototype.indent_size = 3;
+UIElement.prototype.default_colour = "#fffaf0";
+UIElement.prototype.darker_colour = "#ebe2d1";
+UIElement.prototype.lighter_colour = "#ffffff";
 UIElement.prototype.font = "Georgia";
 UIElement.prototype.font_size = 14;
 UIElement.prototype.font_colour = "#222222";
+
+UIElement.prototype.scroll_bar_background_colour = "#bab5a9";
+
+UIElement.prototype.title_default_colour = "#3275a8";
+UIElement.prototype.title_darker_colour = "#1c5078";
+UIElement.prototype.title_lighter_colour = "#68a8d9";
+UIElement.prototype.title_font_colour = "#ffffff";
+
+
+UIElement.prototype.title_quit_button_default_colour = "#d65656";
+UIElement.prototype.title_quit_button_darker_colour = "#a62828";
+UIElement.prototype.title_quit_button_lighter_colour = "#f78181";
 
 UIElement.prototype.draw = function(context)
 {
@@ -67,9 +81,11 @@ UIElement.prototype.draw = function(context)
 	
 	if(this.children)
 	{
+		var elements_to_draw = [...this.children].reverse();
+		elements_to_draw.forEach(element => element.draw(context));
 		// draw children
-		this.children.forEach(child =>
-			child.draw(context));
+		//this.children.forEach(child =>
+		//	child.draw(context));
 	}
 	
 	context.restore();
@@ -243,6 +259,8 @@ UIElement.prototype.handle_mousedown = function(mouseX, mouseY)
 		this.onmousedown(mouseX,mouseY);
 	}
 	this.mousedown = new Point(mouseX, mouseY);
+	this.mousedown.relative_x = this.mousedown.x - this.x;
+	this.mousedown.relative_y = this.mousedown.y - this.y;
 	return true;
 }
 
@@ -316,6 +334,7 @@ UIElement.prototype.handle_keyup = function(character)
 
 UIElement.prototype.addSubElement = function(element, x=0, y=0)
 {
+	if(element.parent) element.parent.removeSubElement(element);
 	element.parent = this;
 	element.setPosition(element.parent.x + x, element.parent.y + y);
 	element.relative_x = x;
@@ -334,11 +353,13 @@ UIElement.prototype.removeSubElement = function(element)
 UIElement.prototype.hide = function()
 {
 	this.hidden = true;
+	if(this.onhide) this.onhide();
 }
 
 UIElement.prototype.show = function()
 {
 	this.hidden = false;
+	if(this.onshow) this.onshow();
 }
 
 UIElement.prototype.focus = function()
@@ -520,8 +541,14 @@ UIPanel.prototype.draw = function(context)
 	if(this.paint) this.paint(context,this.x,this.y);
 	
 	// draw children
-	this.children.forEach(child =>
-		child.draw(context));
+	if(this.children)
+	{
+		var elements_to_draw = [...this.children].reverse();
+		elements_to_draw.forEach(element => element.draw(context));
+		// draw children
+		//this.children.forEach(child =>
+		//	child.draw(context));
+	}
 	context.restore();
 }
 
@@ -604,7 +631,7 @@ Object.defineProperty(UIScrollPanel.prototype, 'constructor', {
     writable: true });
 
 UIScrollPanel.prototype.SCROLL_WIDTH = 25;
-UIScrollPanel.prototype.SCROLL_COLOUR = '#ffffff';
+UIScrollPanel.prototype.SCROLL_COLOUR = UIElement.prototype.scroll_bar_background_colour;
 
 UIScrollPanel.prototype.setPosition = function(x,y)
 {
@@ -768,7 +795,7 @@ UIScrollBarComponent.prototype.attach = function(scrollBar)
 	this.width = scrollBar.SCROLL_WIDTH;
 		
 	// minus twice, once for top and once for bottom 
-	this.height = scrollBar.height - 2 * scrollBar.SCROLL_WIDTH;
+	this.height = scrollBar.height - (2 * scrollBar.SCROLL_WIDTH);
 
 	var panel = this.parent.parent;
 	if(panel)
@@ -847,9 +874,11 @@ UIScrollBarComponentBar.prototype.draw = function(context)
 {
 	if(this.hidden) return false;
 	UIElement.prototype.draw.call(this,context);
+	//this.draw_concave_indents;
 	if(this.mousedown)
 	{
-		this.y = Engine.mouseY;
+		this.y = Engine.mouseY - (this.mousedown.relative_y);
+		//Engine.log(Engine.mouseY - (this.mousedown.y - this.y));
 		if(this.y < this.parent.y) this.y = this.parent.y;
 		if(this.y > this.parent.y + this.parent.height - this.parent.bar_height) this.y = this.parent.y + this.parent.height - this.parent.bar_height;
 		// affect everything ALL the way down the line 
@@ -873,11 +902,11 @@ UIScrollBarComponentBar.prototype.draw = function(context)
 	STATUS BAR 
  */
 
-function UIWindow(x,y,width,height,text,draggable = false, menuButton = false)
+function UIWindow(x,y,width,height,title = "",draggable = false, menuButton = false)
 {
 	UIElement.call(this,x,y,width,height,"window");
 	// title
-	this.title_bar = new UITitleBar(text,draggable,menuButton);
+	this.title_bar = new UITitleBar(title,draggable,menuButton);
 	UIElement.prototype.addSubElement.call(this,this.title_bar,0,0);
 	this.title_bar.attach(this);
 	
@@ -928,6 +957,11 @@ UIWindow.prototype.drop = function(x,y)
 	}
 }	
 
+UIWindow.prototype.setTitle = function(text)
+{
+	if(text !== null) this.title_bar.setTitle(text);
+}
+
 /**
 	MENUBUTTONS
 		QUIT (That's basically it)
@@ -940,11 +974,15 @@ function UITitleBar(text = "",draggable,menuButton = false)
 	this.attached = null;
 	
 	this.title = new UILabel(text,"center");
+	this.title.font_colour = this.font_colour;
 	this.addSubElement(this.title,0,0);
 	
 	if(menuButton)
 	{
 		this.quit_button = new UIButton(25,25,"");
+		this.quit_button.default_colour = UIElement.prototype.title_quit_button_default_colour;
+		this.quit_button.darker_colour = UIElement.prototype.title_quit_button_darker_colour;
+		this.quit_button.lighter_colour = UIElement.prototype.title_quit_button_lighter_colour;
 		this.quit_button.paint = function(context,x,y)
 		{
 			context.beginPath();
@@ -974,6 +1012,12 @@ Object.defineProperty(UITitleBar.prototype, 'constructor', {
 	enumerable: false, // so that it does not appear in 'for in' loop
     writable: true });
 
+UITitleBar.prototype.default_colour = UIElement.prototype.title_default_colour;	
+UITitleBar.prototype.darker_colour = UIElement.prototype.title_darker_colour;	
+UITitleBar.prototype.lighter_colour = UIElement.prototype.title_lighter_colour;	
+
+UITitleBar.prototype.font_colour = UIElement.prototype.title_font_colour;	
+	
 UITitleBar.prototype.HEIGHT = UIWindow.prototype.TITLE_BAR_HEIGHT;	
 
 UITitleBar.prototype.draw = function(context)
@@ -1033,6 +1077,11 @@ UITitleBar.prototype.attach = function(parent)
 		this.quit_button.setPosition(this.x + this.width - this.quit_button.width,this.y);
 		this.quit_button.onmouseclick = () => {this.parent.hide()};
 	}
+}
+
+UITitleBar.prototype.setTitle = function(text)
+{
+	this.title.setText(text);
 }
 
 UITitleBar.prototype.setDraggable = function(draggable)
@@ -1146,6 +1195,8 @@ Object.defineProperty(UITextField.prototype, 'constructor', {
 UITextField.prototype.draw = function(context)
 {
 	if(this.hidden) return false;
+	
+	context.font = this.font_size + "px " + this.font;
 	var textMetric = context.measureText(this.text);
 	
 	context.save();
@@ -1173,13 +1224,6 @@ UITextField.prototype.draw = function(context)
 	}
 	this.draw_concave_indents(context);
 	if(this.paint) this.paint(context,this.x,this.y);
-	
-	if(this.children)
-	{
-		// draw children
-		this.children.forEach(child =>
-			child.draw(context));
-	}
 	
 	context.restore();
 }

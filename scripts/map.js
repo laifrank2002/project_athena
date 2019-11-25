@@ -101,7 +101,7 @@ Map.prototype.tick = function()
 	this.objects.forEach(object => object.tick());
 }
 
-Map.prototype.plopObject = function(object, x=0, y=0)
+Map.prototype.plopObject = function(object, x, y)
 {
 	// validate first to save time and prevent errors
 	if(x < 0 || x + object.width > this.width || y < 0 || y + object.height > this.height)
@@ -169,82 +169,12 @@ Map.prototype.unplopObject = function(object)
 Map.prototype.addObject = function(object)
 {
 	this.objects.push(object);
-	// producers
-	if(object.type_key)
-	{
-		if(object.production_option)
-		{
-			this.addProducer(object.type_key,object.production_option);
-		}
-	}
 }
 
 Map.prototype.removeObject = function(object)
 {
 	object.active = false;
 	this.objects = this.objects.filter(object => object.active);
-	// producers
-	if(object.type_key)
-	{
-		if(object.production_option)
-		{
-			this.removeProducer(object.type_key,object.production_option);
-		}
-	}
-}
-
-Map.prototype.getProducers = function()
-{
-	return this.producers;
-}
-
-Map.prototype.getProducer = function(type)
-{
-	if(!this.producers[type])
-	{
-		Engine.log(`Map.getProducer: producer ${type} does not exist.`);
-		return null;
-	}
-	
-	return this.producers[type];
-}
-
-Map.prototype.addProducer = function(type,option)
-{
-	if(!this.producers[type])
-	{
-		Engine.log(`Map.addProducer: producer ${type} does not exist.`);
-		return false;
-	}
-	
-	if(!this.producers[type].options[option])
-	{
-		Engine.log(`Map.addProducer: producer ${type}'s production option ${option} does not exist.`);
-		return false;
-	}
-	
-	this.producers[type].count++;
-	this.producers[type].options[option].count++;
-	return true;
-}
-
-Map.prototype.removeProducer = function(type,option)
-{
-	if(!this.producers[type])
-	{
-		Engine.log(`Map.removeProducer: producer ${type} does not exist.`);
-		return false;
-	}
-	
-	if(!this.producers[type].options[option])
-	{
-		Engine.log(`Map.addProducer: producer ${type}'s production option ${option} does not exist.`);
-		return false;
-	}
-	
-	this.producers[type].count--;
-	this.producers[type].options[option].count--;
-	return true;
 }
 
 Map.prototype.getTile = function(x,y)
