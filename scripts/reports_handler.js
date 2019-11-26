@@ -68,7 +68,6 @@ var Reports_handler = (
 				var net_value = cash + inventory - debt;
 				var wages = Industry_handler.get_total_wages();
 				
-				
 				finance.push({day:day,cash:cash,inventory:inventory,debt:debt,net_value:net_value,wages:wages});
 				
 				// today

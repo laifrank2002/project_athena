@@ -49,7 +49,7 @@ var Inventory_handler = (
 				item_display_panel.resize(panel.width,display_count * DISPLAY_HEIGHT);
 				panel.addSubElement(item_display_panel, 0, 100);
 				
-				panel.resizeMaxHeight(display_count * DISPLAY_HEIGHT);
+				panel.resizeMaxHeight(display_count * DISPLAY_HEIGHT + 200);
 				
 				// data 
 				inventory = State_manager.get_state("player","city").warehouse;
@@ -136,12 +136,36 @@ var Inventory_handler = (
 			// temporary for modal 
 			buy_item: function(name, amount, price)
 			{
-				inventory.buyItem(name, amount, price);
+				if(!inventory) return false;
+				
+				if(State_manager.get_state("player","money") >= price * amount)
+				{
+					// You CAN'T buy items over limit.
+					var item_amount = inventory.addAmount(name, amount, price);
+
+					if(item_amount) // if 0, gets false, therefore works as intended.
+					{
+						State_manager.add_state("player","money",-price*item_amount);
+						return true;
+					}
+				}
 			},
 			
 			sell_item: function(name, amount, price)
 			{
-				inventory.sellItem(name, amount, price);	
+				if(!inventory) return false;
+
+				var item_amount = inventory.getItem(name).count;
+				if(item_amount > amount)
+				{
+					item_amount = amount;
+				}
+				
+				if(inventory.addAmount(name, -item_amount))
+				{
+					State_manager.add_state("player","money",price * item_amount);
+				}
+				
 			},
 			
 			get_inventory_value: function()

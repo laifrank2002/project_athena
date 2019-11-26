@@ -1,4 +1,8 @@
 /**
+	Market handler
+ */
+
+/**
 	Markets, which conform to prices using supply and demand.
 	Not only that, but it also handles money!
  */

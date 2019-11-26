@@ -43,7 +43,7 @@ function UIElement(x,y,width,height,type = "generic",onmouseclick = null)
 // defined colours and settings. THESE are what you CAN play around with.
 UIElement.prototype.indent_size = 3;
 UIElement.prototype.default_colour = "#fffaf0";
-UIElement.prototype.darker_colour = "#ebe2d1";
+UIElement.prototype.darker_colour = "#c4ba82";
 UIElement.prototype.lighter_colour = "#ffffff";
 UIElement.prototype.font = "Georgia";
 UIElement.prototype.font_size = 14;
@@ -714,7 +714,6 @@ UIScrollBar.prototype.draw = function(context)
 {
 	if(this.hidden) return false;
 	UIElement.prototype.draw.call(this,context);
-	this.scrollComponent.draw_borders(context);
 }
 
 UIScrollBar.prototype.attach = function(panel)
@@ -855,6 +854,7 @@ Object.defineProperty(UIScrollBarComponentBar.prototype, 'constructor', {
     writable: true });
 
 UIScrollBarComponentBar.prototype.SCROLL_WIDTH = UIScrollPanel.prototype.SCROLL_WIDTH;
+UIScrollBarComponentBar.prototype.indent_size = 4;
 
 UIScrollBarComponentBar.prototype.attach = function(scrollBar)
 {
@@ -874,7 +874,9 @@ UIScrollBarComponentBar.prototype.draw = function(context)
 {
 	if(this.hidden) return false;
 	UIElement.prototype.draw.call(this,context);
-	//this.draw_concave_indents;
+	// we do both to get that nice, edge faded look. of course, that means we're gonna have to cheat a little bit with indents.
+	this.draw_concave_indents(context);
+	this.draw_borders(context);
 	if(this.mousedown)
 	{
 		this.y = Engine.mouseY - (this.mousedown.relative_y);

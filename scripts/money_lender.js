@@ -132,7 +132,7 @@ var Money_lender = (
 			close_day: function()
 			{
 				// ticked per day interest
-				Money_lender.loaned_amount *= Math.pow(1+Money_lender.interest_rate,(1/Time_converter.DAYS_PER_AVERAGE_YEAR));
+				Money_lender.loaned_amount *= Math.pow(1+Money_lender.interest_rate,(1/Time_converter.AVERAGE_DAYS_PER_YEAR));
 				// TODO: daily interest payments designed to pay off loan in some number of years;
 				Money_lender_handler.update();
 			},

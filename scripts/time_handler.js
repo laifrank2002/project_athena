@@ -112,6 +112,7 @@ var Time_handler = (
 				Industry_handler.close_day(day);
 				Reports_handler.close_day(day);
 				City_handler.close_day(day);
+				
 				Money_lender.close_day(day);
 				
 				if(day % 7 === 0)
@@ -123,7 +124,7 @@ var Time_handler = (
 			close_week: function(week)
 			{
 				City_handler.close_week(week);
-				Engine.log(`Week ${week} has passed!`);
+				City_hall_handler.close_week(week);
 			},
 			
 			pause: function()
@@ -181,7 +182,8 @@ var Time_converter = {
 	DAYS_PER_YEAR: 365,
 	DAYS_PER_LEAPYEAR: 366,
 	// for maths 
-	DAYS_PER_AVERAGE_YEAR: 365.2422,
+	AVERAGE_DAYS_PER_YEAR: 365.2422,
+	AVERAGE_WEEKS_PER_YEAR: 52.1775,
 	MONTHS:["Jan.","Feb.","Mar.","Apr.","May","June","July","Aug.","Sept.","Oct.","Nov.","Dec."],
 	DAYS_PER_MONTH_YEAR:[31,28,31,30,31,30,31,31,30,31,30,31],
 	DAYS_PER_MONTH_LEAPYEAR:[31,29,31,30,31,30,31,31,30,31,30,31],

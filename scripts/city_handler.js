@@ -115,19 +115,19 @@ var City_handler = (
 			
 			close_day: function(day)
 			{
-				for(var index = 0; index < cities.length; index++)
+				for(var key in cities)
 				{
-					cities[index].close_day(day);
+					cities[key].close_day(day);
 				}
 			},
 			
 			close_week: function(week)
 			{
-				for(var index = 0; index < cities.length; index++)
+				for(var key in cities)
 				{
-					cities[index].close_week(week);
+					cities[key].close_week(week);
 				}
-			}
+			},
 			
 		}
 	}
@@ -170,12 +170,13 @@ function City(city_key)
 
 City.prototype.close_day = function(day)
 {
-	this.population *= Math.pow(Math.E,this.city.growth_rate*(1/Time_converter.DAYS_PER_AVERAGE_YEAR));
+	
 	//this.market.close_day(day);
 }
 
 City.prototype.close_week = function(week)
 {
+	this.population *= Math.pow(Math.E,this.city.growth_rate*(1/Time_converter.AVERAGE_WEEKS_PER_YEAR));
 	this.market.close_week(week);
 }
 
@@ -193,7 +194,29 @@ var Defined_cities = {
 		locations: ["city_hall","properties","money_lender","real_estate_agent","market","port"],
 		prebuilt_realestate:["small_mill_a"],
 		
-		initial_deals:[{"key":"cotton","amount":100}],
+		// demand and supply per WEEK.
+		// 3.6 thread per spinster per day 
+		// 216 thread per factory per day 
+		// 1512 thread per factory per week 
+		// assume 20 factories in lancaster 
+		
+		// thus, how ever many stuff the player brings into the price per week is reset weekly.
+		initial_demand_and_supply: {
+			"cotton": {
+				demand: 30000,
+				supply: 40000,
+			},
+			
+			"cotton_thread": {
+				demand: 25000,
+				supply: 30000,
+			},
+			
+			"cotton_cloth": {
+				demand: 20000,
+				supply: 25000,
+			},
+		}
 	},
 	
 	"manchester": {

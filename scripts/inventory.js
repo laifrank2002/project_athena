@@ -52,7 +52,7 @@ Inventory.prototype.removeCapacity = function(capacity)
 }
 
 // todo, migrate in order for a more friendly market solution
-
+/*
 Inventory.prototype.buyItem = function(name, amount, price)
 {
 	if(amount < 0) return false;
@@ -73,7 +73,8 @@ Inventory.prototype.buyItem = function(name, amount, price)
 		}	
 	}
 }
-
+*/
+/*
 Inventory.prototype.sellItem = function(name, amount, price)
 {
 	if(amount < 0) return false;
@@ -94,11 +95,12 @@ Inventory.prototype.sellItem = function(name, amount, price)
 		}
 	}
 }
-
+*/
 /**
 	Attempts to transfer some amount from one inventory to another.
 	Will transfer FROM PASSED inventory TO THIS inventory.
  */
+/*
 Inventory.prototype.transferAmount = function(key, amount, price = 0, inventory)
 {
 	var first_item = this.getItem(key);
@@ -118,7 +120,8 @@ Inventory.prototype.transferAmount = function(key, amount, price = 0, inventory)
 	this.addAmount(key,item_amount,price);
 	inventory.addAmount(key,-item_amount,price);
 }
-
+*/
+// addAmount returns the amount of items actually added
 Inventory.prototype.addAmount = function(key, amount, price = 0)
 {
 	var item = this.items[key];
@@ -128,31 +131,43 @@ Inventory.prototype.addAmount = function(key, amount, price = 0)
 		item.average_price = (item.average_price * item.count + amount * price) / (item.count + amount);
 		
 		// safeguard on avg. price
-		if(isNaN(item.average_price) || item.average_price === Infinity) item.average_price = 0;
-		
-		// add items && discard overlimit if set to limited storage 
-		if(this.utilized_capacity + amount > this.capacity && !this.infinite_storage)
+		if(isNaN(item.average_price) || item.average_price === Infinity) 
 		{
+			item.average_price = 0;
+		}
+		
+		// if already exceed capacity AND trying to add something , then do nothing
+		if(this.utilized_capacity >= this.capacity && amount > 0)
+		{
+			return 0;
+		}
+		else if(this.utilized_capacity + amount > this.capacity && !this.infinite_storage)
+		{
+			// else  add items && discard overlimit if set to limited storage 
 			var item_amount = this.capacity - this.utilized_capacity;
 			item.count += item_amount;
 			this.utilized_capacity += item_amount;
+			
+			return item_amount;
 		}
 		else 
 		{
 			item.count += amount;
 			this.utilized_capacity += amount;
+			
+			return amount;
 		}
-		// safeguard on item count 
+		
+		// safeguard on item count
 		if(item.count < 0 || isNaN(item.count))
 		{
 			item.count = 0;
 		}
-		return true;
 	}
 	else 
 	{
 		Engine.log(`Inventory.addAmount: item ${key} doesn't exist.`);
-		return false;
+		return 0;
 	}
 }
 
@@ -202,63 +217,81 @@ function Item()
 {
 	
 }
-
+/*
+	Where all the items are defined, with the following *IMPORTANT* properties
+		name - display name 
+		market_value - base price 
+		elasticity - %change, so then for every %change in price, there is a %elasticity change in price.
+			raw resources are low, finished goods are high elasticities. 
+		icon - image icon 
+ */
 var items = {
 	"cotton": {
 		"name": "Cotton",
 		"market_value": 2,
+		"elasticity": 0.1,
 		"icon": "resource_cotton",
 	},
 	"cotton_cloth": {
 		"name": "Cotton Cloth",
 		"market_value": 12,
+		"elasticity": 0.9,
 		"icon": "resource_cotton_cloth",
 	},
 	"cotton_thread": {
 		"name": "Cotton Thread",
 		"market_value": 8,
+		"elasticity": 0.7,
 		"icon": "resource_cotton_thread",
 	},
-	/*
+	
 	"flax": {
 		"name": "Flax",
 		"market_value": 2,
+		"elasticity": 0.2,
 		"icon": "resource_cotton",
 	},
 	"linen_thread": {
 		"name": "Linen Thread",
 		"market_value": 8,
+		"elasticity": 0.6,
 		"icon": "resource_cotton",
 	},
 	"linens": {
 		"name": "Linens",
 		"market_value": 10,
+		"elasticity": 1.2,
 		"icon": "resource_cotton",
 	},
 	"velvet": {
 		"name": "Velvet",
 		"market_value": 38,
+		"elasticity": 4.2,
 		"icon": "resource_cotton",
 	},
 	"wool": {
 		"name": "Wool",
 		"market_value": 2,
+		"elasticity": 0.05,
 		"icon": "resource_cotton",
 	},
 	"yarn": {
 		"name": "Yarn",
 		"market_value": 8,
+		"elasticity": 0.3,
 		"icon": "resource_cotton",
 	},
 	"hides": {
 		"name": "Hides",
 		"market_value": 18,
+		"elasticity": 0.01,
 		"icon": "resource_cotton",
 	},
 	"leather": {
 		"name": "Leather",
 		"market_value": 28,
+		"elasticity": 0.5,
 		"icon": "resource_cotton",
 	},
-	*/
+	
 }
