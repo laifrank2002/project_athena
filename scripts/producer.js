@@ -103,7 +103,7 @@ Producer.prototype.draw = function(context,x,y)
 
 /*
 	TODO
-	DEPRECATE BY CENTRALIZING THROUGH CATEGORIES
+	DEPRECATE BY CENTRALIZING THROUGH CATEGORIES IN Industry_handler
 	ALSO PRODUCTION OPTIONS
  */
 Producer.prototype.tick = function()

@@ -62,7 +62,6 @@ var State_manager = (
 					,money: 48000
 					,city: data["world"].cities[STARTING_CITY]
 					,map_name: data["world"].cities[STARTING_CITY].real_estate[0].map_name
-					,map: data["world"].cities[STARTING_CITY].real_estate[0].factory
 					,factory: data["world"].cities[STARTING_CITY].real_estate[0].factory
 					,credit_rating: "NR"
 					,loaned_amount: 0};
@@ -130,6 +129,25 @@ var State_manager = (
 			remove_listener: function(name)
 			{
 				listeners = listeners.filter(listener => listener.name !== name);
+			},
+			
+			export_data: function()
+			{
+				Engine.log("Stringifying data for pasta... ");
+				return JSON.stringify(data);
+			},
+			
+			import_data: function(data_string)
+			{
+				Engine.log("Importing pasta...");
+				var imported_data = JSON.parse(data_string);
+				
+				for(var key in imported_data)
+				{
+					Engine.log(`Pasta ${key} is being added`);
+					// this will add unnecessary info, but that's fine. What's important is that we get the right initializations in.
+					data[key] = imported_data[key];
+				}
 			},
 			
 			load: function()

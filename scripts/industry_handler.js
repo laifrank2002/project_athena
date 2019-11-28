@@ -15,8 +15,6 @@ var Industry_handler = (
 		
 		var panel;
 		
-		var factory;
-		
 		var current_map;
 		
 		// components
@@ -174,18 +172,22 @@ var Industry_handler = (
 				viewport = new Viewport(0,0,panel.width,panel.height-50);
 				
 				// data
-				factory = State_manager.get_state("player","factory");
-								
+				Industry_handler.set_factory(State_manager.get_state("player","factory"));
+				
+				settings = State_manager.get_state("settings","industry");
+
+			},
+			
+			set_factory: function(factory)
+			{
+				current_map = factory;
+				
 				background_factory = Engine.assets[factory.background_image];
 				background_day = Engine.assets[factory.skyline_day_image];
 				background_night = Engine.assets[factory.skyline_night_image];
 				
 				map_offset = factory.factory_position;
-				current_map = State_manager.get_state("player","map");
 				current_map.initialize();
-				
-				settings = State_manager.get_state("settings","industry");
-
 			},
 			
 			draw: function(context)
@@ -435,7 +437,7 @@ var Industry_handler = (
 			// for data
 			get_total_wages: function()
 			{
-				return factory.getTotalWages();
+				return current_map.getTotalWages();
 			},
 			
 			/* UTILITY */
