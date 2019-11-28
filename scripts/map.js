@@ -20,7 +20,7 @@ function Map(width,height)
 	{
 		this.tiles.push(new Tile(index % width, Math.floor(index / width)));
 	}
-	
+	/*
 	this.tiles.forEach(tile => 
 		{
 			var x = tile.x;
@@ -35,6 +35,7 @@ function Map(width,height)
 			if(x > 0) tile.neighbours.west = this.getTile(x - 1,y);
 		}
 	);
+	*/
 	
 	this.objects = [];
 	
@@ -133,13 +134,13 @@ Map.prototype.plopObject = function(object, x, y)
 			return false;
 			Engine.notify(`Tile already occupied.`);
 		}
-		occupiedTiles.push(tile);
+		occupiedTiles.push(new Point(tile.x,tile.y)); // because circular bloody structures
 	}
 	// check one last time to make sure object isn't already plopped 
 	if(!object.plop(occupiedTiles)) return false;
 	
 	// since it is all clear, then proceed and set everything
-	occupiedTiles.forEach(tile => tile.setOccupied(object));
+	occupiedTiles.forEach(coordinate => this.getTile(coordinate.x,coordinate.y).setOccupied(object));
 	this.addObject(object);
 	return true;
 }
@@ -160,8 +161,7 @@ Map.prototype.unplopObject = function(object)
 	if(!object.unplop()) return false;
 	
 	// since it is all clear, then proceed and set everything
-	occupiedTiles.forEach(tile => tile.clearOccupied());
-	object.occupiedTiles = null;
+	occupiedTiles.forEach(coordinate => this.getTile(coordinate.x,coordinate.y).clearOccupied());
 	this.removeObject(object);
 	return true;
 }
@@ -226,9 +226,9 @@ function Tile(x,y)
 	this.x = x;
 	this.y = y;
 	this.occupied = null;
-	this.neighbours = {north: null, south: null, east: null, west: null};
+	// this.neighbours = {north: null, south: null, east: null, west: null};
 }
-
+/*
 Tile.prototype.setNeighbours = function(north,south,east,west)
 {
 	this.neighbours = {north:north, south: south, east: east, west: west};
@@ -238,7 +238,7 @@ Tile.prototype.getNeighbours = function()
 {
 	return this.neighbours;
 }
-
+*/
 Tile.prototype.setOccupied = function(occupied)
 {
 	this.occupied = occupied;

@@ -285,6 +285,29 @@ Rectangle.prototype.isInBounds = function(x,y)
 	return false;
 }
 
+function Line(slope,y_intercept)
+{
+	this.slope = slope;
+	this.y_intercept = y_intercept;
+}
+
+Line.prototype.set_y_intercept = function(point)
+{
+	this.y_intercept = (-this.slope * point.x) + point.y;
+}
+
+Line.prototype.get_intersection = function(line)
+{
+	var x = (line.y_intercept - this.y_intercept) / (this.slope - line.slope);
+	var y = this.slope * x + this.y_intercept;
+	return new Point(x,y);
+}
+
+Line.prototype.add_y_intercept = function(amount)
+{
+	this.y_intercept += amount;
+}
+
 function create_image(path) 
 {
 	var image = document.createElement("img");

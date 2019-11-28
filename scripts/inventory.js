@@ -25,7 +25,7 @@ function Inventory(capacity, infinite_storage = false)
 	}
 }
 
-Inventory.prototype.setCapacity = function(capacity)
+Inventory.prototype.set_capacity = function(capacity)
 {
 	if(capacity > 0)
 	{
@@ -33,7 +33,7 @@ Inventory.prototype.setCapacity = function(capacity)
 	}
 }
 
-Inventory.prototype.addCapacity = function(capacity)
+Inventory.prototype.add_capacity = function(capacity)
 {
 	if(capacity > 0)
 	{
@@ -41,7 +41,7 @@ Inventory.prototype.addCapacity = function(capacity)
 	}
 }
 
-Inventory.prototype.removeCapacity = function(capacity)
+Inventory.prototype.remove_capacity = function(capacity)
 {
 	if(capacity > 0)
 	{
@@ -66,7 +66,7 @@ Inventory.prototype.buyItem = function(name, amount, price)
 			item_amount = this.capacity - this.utilized_capacity;
 		}
 		
-		if(this.addAmount(name,item_amount,price))
+		if(this.add_amount(name,item_amount,price))
 		{
 			State_manager.add_state("player","money",-price*item_amount);
 			return true;
@@ -79,17 +79,17 @@ Inventory.prototype.sellItem = function(name, amount, price)
 {
 	if(amount < 0) return false;
 	
-	var item_amount = this.getItem(name).count;
+	var item_amount = this.get_item(name).count;
 	if(item_amount < amount)
 	{
-		if(this.addAmount(name, -item_amount))
+		if(this.add_amount(name, -item_amount))
 		{
 			State_manager.add_state("player","money",price * item_amount);
 		}
 	}
 	else 
 	{
-		if(this.addAmount(name, -amount))
+		if(this.add_amount(name, -amount))
 		{
 			State_manager.add_state("player","money",price * amount);
 		}
@@ -103,8 +103,8 @@ Inventory.prototype.sellItem = function(name, amount, price)
 /*
 Inventory.prototype.transferAmount = function(key, amount, price = 0, inventory)
 {
-	var first_item = this.getItem(key);
-	var second_item = inventory.getItem(key);
+	var first_item = this.get_item(key);
+	var second_item = inventory.get_item(key);
 	// validate first 
 	if(!first_item || !second_item)
 	{
@@ -117,12 +117,12 @@ Inventory.prototype.transferAmount = function(key, amount, price = 0, inventory)
 		item_amount = second_item.count;
 	}
 	
-	this.addAmount(key,item_amount,price);
-	inventory.addAmount(key,-item_amount,price);
+	this.add_amount(key,item_amount,price);
+	inventory.add_amount(key,-item_amount,price);
 }
 */
-// addAmount returns the amount of items actually added
-Inventory.prototype.addAmount = function(key, amount, price = 0)
+// add_amount returns the amount of items actually added
+Inventory.prototype.add_amount = function(key, amount, price = 0)
 {
 	var item = this.items[key];
 	
@@ -137,7 +137,7 @@ Inventory.prototype.addAmount = function(key, amount, price = 0)
 		}
 		
 		// if already exceed capacity AND trying to add something , then do nothing
-		if(this.utilized_capacity >= this.capacity && amount > 0)
+		if(this.utilized_capacity >= this.capacity && amount > 0 && !this.infinite_storage)
 		{
 			return 0;
 		}
@@ -166,12 +166,12 @@ Inventory.prototype.addAmount = function(key, amount, price = 0)
 	}
 	else 
 	{
-		Engine.log(`Inventory.addAmount: item ${key} doesn't exist.`);
+		Engine.log(`Inventory.add_amount: item ${key} doesn't exist.`);
 		return 0;
 	}
 }
 
-Inventory.prototype.getItem = function(key)
+Inventory.prototype.get_item = function(key)
 {
 	if(this.items[key])
 	{
@@ -179,10 +179,10 @@ Inventory.prototype.getItem = function(key)
 	}
 	else 
 	{
-		Engine.log(`Inventory.getItem: item ${key} doesn't exist.`);
+		Engine.log(`Inventory.get_item: item ${key} doesn't exist.`);
 	}
 }
-Inventory.prototype.getTotalValue = function()
+Inventory.prototype.get_total_value = function()
 {
 	var total_value = 0;
 	for(var key in this.items)
@@ -221,76 +221,64 @@ function Item()
 	Where all the items are defined, with the following *IMPORTANT* properties
 		name - display name 
 		market_value - base price 
-		elasticity - %change, so then for every %change in price, there is a %elasticity change in price.
-			raw resources are low, finished goods are high elasticities. 
+		demand - demand curve
 		icon - image icon 
  */
 var items = {
 	"cotton": {
 		"name": "Cotton",
 		"market_value": 2,
-		"elasticity": 0.1,
 		"icon": "resource_cotton",
 	},
 	"cotton_cloth": {
 		"name": "Cotton Cloth",
 		"market_value": 12,
-		"elasticity": 0.9,
 		"icon": "resource_cotton_cloth",
 	},
 	"cotton_thread": {
 		"name": "Cotton Thread",
 		"market_value": 8,
-		"elasticity": 0.7,
 		"icon": "resource_cotton_thread",
 	},
 	
 	"flax": {
 		"name": "Flax",
 		"market_value": 2,
-		"elasticity": 0.2,
 		"icon": "resource_cotton",
 	},
 	"linen_thread": {
 		"name": "Linen Thread",
 		"market_value": 8,
-		"elasticity": 0.6,
 		"icon": "resource_cotton",
 	},
 	"linens": {
 		"name": "Linens",
 		"market_value": 10,
-		"elasticity": 1.2,
 		"icon": "resource_cotton",
 	},
 	"velvet": {
 		"name": "Velvet",
 		"market_value": 38,
-		"elasticity": 4.2,
 		"icon": "resource_cotton",
 	},
 	"wool": {
 		"name": "Wool",
 		"market_value": 2,
-		"elasticity": 0.05,
 		"icon": "resource_cotton",
 	},
 	"yarn": {
 		"name": "Yarn",
 		"market_value": 8,
-		"elasticity": 0.3,
 		"icon": "resource_cotton",
 	},
 	"hides": {
 		"name": "Hides",
 		"market_value": 18,
-		"elasticity": 0.01,
 		"icon": "resource_cotton",
 	},
 	"leather": {
 		"name": "Leather",
 		"market_value": 28,
-		"elasticity": 0.5,
 		"icon": "resource_cotton",
 	},
 	

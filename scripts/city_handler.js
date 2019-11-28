@@ -103,6 +103,11 @@ var City_handler = (
 				
 			},
 			
+			get_city: function(city_key)
+			{
+				return cities[city_key];
+			},
+			
 			draw: function(context)
 			{
 				if(background_image)
@@ -151,8 +156,7 @@ function City(city_key)
 	// each warehouse only adds to this blank inventory
 	this.warehouse = new Inventory(0);
 	// city's inventory
-	this.market = new Market(this);
-	
+	this.market = new Market(city_key);
 	
 	// owned properties 
 	this.real_estate = [];
@@ -160,7 +164,7 @@ function City(city_key)
 		{
 			var real_estate = new Real_estate(key);
 			this.real_estate.push(real_estate);
-			this.warehouse.addCapacity(real_estate.capacity);
+			this.warehouse.add_capacity(real_estate.capacity);
 		}
 	);
 	
@@ -201,20 +205,22 @@ var Defined_cities = {
 		// assume 20 factories in lancaster 
 		
 		// thus, how ever many stuff the player brings into the price per week is reset weekly.
-		initial_demand_and_supply: {
+		// x - price, y - quantity
+		// can't sell more than zpd.y (people don't demand 'nuff!)
+		demand_and_supply: {
 			"cotton": {
-				demand: 30000,
-				supply: 40000,
+				zero_price_demanded: {x:0, y: 40000},
+				initial_equilibrium: {x: 2, y: 30000},
 			},
 			
 			"cotton_thread": {
-				demand: 25000,
-				supply: 30000,
+				zero_price_demanded: {x:0, y: 35000},
+				initial_equilibrium: {x: 8, y: 25000},
 			},
 			
 			"cotton_cloth": {
-				demand: 20000,
-				supply: 25000,
+				zero_price_demanded: {x:0, y: 30000},
+				initial_equilibrium: {x: 12, y: 20000},
 			},
 		}
 	},
@@ -229,6 +235,23 @@ var Defined_cities = {
 		locations: ["city_hall","properties","money_lender","real_estate_agent","market","port"],
 		
 		prebuilt_realestate:[],
+		
+		demand_and_supply: {
+			"cotton": {
+				zero_price_demanded: {x:0, y: 40000},
+				initial_equilibrium: {x: 2, y: 30000},
+			},
+			
+			"cotton_thread": {
+				zero_price_demanded: {x:0, y: 35000},
+				initial_equilibrium: {x: 8, y: 25000},
+			},
+			
+			"cotton_cloth": {
+				zero_price_demanded: {x:0, y: 30000},
+				initial_equilibrium: {x: 12, y: 20000},
+			},
+		}
 	},
 }
 

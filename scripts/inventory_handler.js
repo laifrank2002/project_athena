@@ -126,7 +126,7 @@ var Inventory_handler = (
 				
 				for(var key in displays)
 				{
-					var item = inventory.getItem(key);
+					var item = inventory.get_item(key);
 					var display = displays[key];
 					display.average_price.setText(`Bought for : ${Currency_converter.displayFull(item.average_price)}`);
 					display.stock.setText(`Stock: ${item.count.toLocaleString()} units`);
@@ -141,7 +141,7 @@ var Inventory_handler = (
 				if(State_manager.get_state("player","money") >= price * amount)
 				{
 					// You CAN'T buy items over limit.
-					var item_amount = inventory.addAmount(name, amount, price);
+					var item_amount = inventory.add_amount(name, amount, price);
 
 					if(item_amount) // if 0, gets false, therefore works as intended.
 					{
@@ -155,13 +155,13 @@ var Inventory_handler = (
 			{
 				if(!inventory) return false;
 
-				var item_amount = inventory.getItem(name).count;
+				var item_amount = inventory.get_item(name).count;
 				if(item_amount > amount)
 				{
 					item_amount = amount;
 				}
 				
-				if(inventory.addAmount(name, -item_amount))
+				if(inventory.add_amount(name, -item_amount))
 				{
 					State_manager.add_state("player","money",price * item_amount);
 				}
@@ -170,7 +170,7 @@ var Inventory_handler = (
 			
 			get_inventory_value: function()
 			{
-				return inventory.getTotalValue();
+				return inventory.get_total_value();
 			},
 		}
 	}

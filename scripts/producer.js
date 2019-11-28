@@ -62,7 +62,6 @@ Producer.prototype.types = {
 		skill: "skilled",
 		description: "How many weaves can a weaver weave if a weaver could weave wool? 31d/day",
 	},
-	
 	"tanner": {
 		name: "Tanner",
 		width: 2,
@@ -120,28 +119,28 @@ Producer.prototype.tick = function()
 	for(key in production.input)
 	{
 		// or, if autobuy is on...
-		if(Inventory_handler.inventory.getItem(key).count < production.input[key] * rate)
+		if(Inventory_handler.inventory.get_item(key).count < production.input[key] * rate)
 		{
 			if(Industry_handler.settings.autobuy)
 			{
-				var missing_amount = production.input[key] * rate - Inventory_handler.inventory.getItem(key).count;
-				Inventory_handler.buy_item(key, missing_amount, Inventory_handler.inventory.getItem(key).price);
+				var missing_amount = production.input[key] * rate - Inventory_handler.inventory.get_item(key).count;
+				Inventory_handler.buy_item(key, missing_amount, Inventory_handler.inventory.get_item(key).price);
 			}
 		}
 		
-		limited_throughput_rate = Math.min(limited_throughput_rate,Inventory_handler.inventory.getItem(key).count / (production.input[key] * rate))
+		limited_throughput_rate = Math.min(limited_throughput_rate,Inventory_handler.inventory.get_item(key).count / (production.input[key] * rate))
 	}
 	rate = rate * limited_throughput_rate;
 	
 	// now start subtracting
 	for(key in production.input)
 	{
-		Inventory_handler.inventory.addAmount(key,-production.input[key] * rate);
+		Inventory_handler.inventory.add_amount(key,-production.input[key] * rate);
 	}
 	
 	// and then producing!
 	for(key in production.output)
 	{
-		Inventory_handler.inventory.addAmount(key,production.output[key] * rate);
+		Inventory_handler.inventory.add_amount(key,production.output[key] * rate);
 	}
 }
