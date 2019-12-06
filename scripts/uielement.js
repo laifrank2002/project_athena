@@ -1238,7 +1238,6 @@ UITextField.prototype.getText = function()
 UITextField.prototype.setText = function(text)
 {
 	this.text = text;
-	if(this.validate) this.validate(this.text); 
 }
 
 UITextField.prototype.getErrorText = function()
@@ -1250,11 +1249,11 @@ UITextField.prototype.handle_keydown = function(character)
 {
 	if(UIElement.prototype.handle_keydown.call(this,character))
 	{
-		this.onKeyTyped(character);
+		this.type_character(character);
 	}
 }
 
-UITextField.prototype.onKeyTyped = function(character)
+UITextField.prototype.type_character = function(character)
 {
 	// also add backspace/delete too!
 	if(character.length === 1)
@@ -1265,7 +1264,12 @@ UITextField.prototype.onKeyTyped = function(character)
 	{
 		this.text = this.text.substring(0, this.text.length - 1);
 	}
-	if(this.validate) this.validate(this.text); 
+	else if(character === "Enter")
+	{
+		if(this.onenter) this.onenter();
+	}
+	// sets the text by direct attribute instead of setText to avoid an infinite loop.
+	if(this.onkeytyped) this.onkeytyped(character); 
 }
 
 // UI Drawer, which handles away all the common features to be drawn in terms of UI

@@ -77,36 +77,42 @@ Economy.prototype.close_week = function(week)
 	}
 }
 
-/* Markets for a single good */
-function Market(key)
+/**
+	Markets
+	Holds the two lines of DEMAND and SUPPLY
+	Uses those systems to determine price and what it would cost 
+	To buy any amount of anything.
+ */
+function Market(key, demand_and_supply)
 {
-	var demand_and_supply = Defined_cities[this.city_key].demand_and_supply[key];
-	if(demand_and_supply)
-	{
-		var ie = demand_and_supply.initial_equilibrium;
-		var zpd = demand_and_supply.zero_price_demanded;
-		
-		var item = this.Item.prototype.items[key];
-		
-		item.buyable = true;
-		item.demand = new Line((ie.y - zpd.y) / (ie.x - zpd.x),zpd.y);
-		item.supply = new Line((ie.y) / (ie.x),0);
-		item.price = ie.x;
-		
-		item.sold_weekly = 0;
-		item.sold_total = 0;
-		item.bought_weekly = 0;
-		item.bought_total = 0;
-	}
-	else 
-	{
-		this.Item.prototype.items[key].buyable = false;
-	}	
+	Item.call(this,key);
+	
+	if(!demand_and_supply) this.buyable = false;
+	
+	var ie = demand_and_supply.initial_equilibrium;
+	var zpd = demand_and_supply.zero_price_demanded;
+	
+	this.buyable = true;
+	this.demand = new Line((ie.y - zpd.y) / (ie.x - zpd.x),zpd.y);
+	this.supply = new Line((ie.y) / (ie.x),0);
+	this.price = ie.x;
+	
+	this.sold_weekly = 0;
+	this.sold_total = 0;
+	this.bought_weekly = 0;
+	this.bought_total = 0;
 }
 
-Market.prototype.close_week = function()
+Market.prototype = Object.create(Inventory.prototype);
+Object.defineProperty(Market.prototype, 'constructor', {
+	value: Market,
+	enumerable: false, // so that it does not appear in 'for in' loop
+    writable: true });
+
+Market.prototype.reset_weekly_stats = function()
 {
-	
+	this.sold_weekly = 0;
+	this.bought_weekly = 0;
 }
 
 /*

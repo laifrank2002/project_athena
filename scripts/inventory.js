@@ -1,10 +1,9 @@
 /**
 	Stores an amount of each item up to a certain set capacity;
-	Each inventory can be used in multiple settings.
-	Ie
-		Player
-		City Warehouses
-		Ships?
+	Each inventory can be used in multiple settings,
+	Responsible for 
+		Capacity!
+		Managing aggregate items 
  */
 function Inventory(capacity, infinite_storage = false)
 {
@@ -95,31 +94,29 @@ Inventory.prototype.get_total_value = function()
 	var total_value = 0;
 	for(var key in this.items)
 	{
-		total_value += this.items[key].count * this.items[key].market_value;
+		total_value += this.items[key].get_total_market_value();
 	}
 	
 	return total_value;
 }
 
 /**
-	Used in verifying integrity during
-		Saving
-		Loading
- */
+	Used in re-integritizing
+*/
 
 Inventory.prototype.recalculate_utilized_capacity = function()
 {
 	this.utilized_capacity = 0;
 	for(var key in this.Item.prototype.items)
 	{
-		this.utilized_capacity += this.Item.prototype.items[key].count;
+		this.utilized_capacity += this.items[key].amount;
 	}
 	
 }
 
 /**
 	An item.
-	Pure data.
+	Responsible for keeping track of how much we have, also adding and subtracting.
  */
 function Item(key)
 {
@@ -132,7 +129,7 @@ function Item(key)
 	}
 	this.key = key;
 	this.name = item.name;
-	this.count = 0;
+	this.amount = 0;
 	this.price = item.market_value;
 	this.average_price = 0;
 	this.market_value = item.market_value;
@@ -201,12 +198,12 @@ Item.prototype.add_amount = function(amount, price = 0)
 {
 	if(amount < 0) return;
 	
-	this.average_price = ((this.average_price * this.count) + (amount * price)) / (this.count + amount);
+	this.average_price = ((this.average_price * this.amount) + (amount * price)) / (this.amount + amount);
 	// for dividing by 0 (removing EVERYTHING) situations
 	if(isNaN(this.average_price) || this.average_price === Infinity) this.average_price = 0;
 	
 	// add AFTER calculating average_price, otherwise we'd need an old_price
-	this.count += amount;
+	this.amount += amount;
 	
 	return amount;
 }
@@ -215,15 +212,20 @@ Item.prototype.remove_amount = function(amount)
 {
 	if(amount < 0) return;
 	
-	if(this.count < amount)
+	if(this.amount < amount)
 	{
-		var amount_removed = this.count;
-		this.count = 0;
+		var amount_removed = this.amount;
+		this.amount = 0;
 		
 		return amount_removed;
 	}
 	
-	this.count -= amount;
+	this.amount -= amount;
 	
 	return amount;
+}
+
+Item.prototype.get_total_market_value = function()
+{
+	return this.amount * this.market_value;
 }

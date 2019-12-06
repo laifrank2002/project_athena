@@ -13,6 +13,7 @@ function Producer(type_key)
 	this.type_key = type_key;
 	this.type = this.types[type_key];
 	this.image = Engine.assets[this.type.image];
+	this.productivity = 1;
 	this.production_option = Object.keys(this.type.production)[0];
 }
 
@@ -115,20 +116,20 @@ Producer.prototype.tick = function()
 	var rate = production.rate;
 	
 	// limit rate based on availible inputs
-	var limited_throughput_rate = 1.0;
+	var limited_throughput_rate = this.productivity;
 	for(key in production.input)
 	{
 		// or, if autobuy is on...
-		if(Inventory_handler.inventory.get_item(key).count < production.input[key] * rate)
+		if(Inventory_handler.inventory.get_item(key).amount < production.input[key] * rate)
 		{
 			if(Industry_handler.settings.autobuy)
 			{
-				var missing_amount = production.input[key] * rate - Inventory_handler.inventory.get_item(key).count;
+				var missing_amount = production.input[key] * rate - Inventory_handler.inventory.get_item(key).amount;
 				Inventory_handler.buy_item(key, missing_amount, Inventory_handler.inventory.get_item(key).price);
 			}
 		}
 		
-		limited_throughput_rate = Math.min(limited_throughput_rate,Inventory_handler.inventory.get_item(key).count / (production.input[key] * rate))
+		limited_throughput_rate = Math.min(limited_throughput_rate,Inventory_handler.inventory.get_item(key).amount / (production.input[key] * rate))
 	}
 	rate = rate * limited_throughput_rate;
 	

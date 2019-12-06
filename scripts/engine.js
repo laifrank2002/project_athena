@@ -180,7 +180,7 @@ var Engine = (
 			handle_keydown: function(keyevent)
 			{
 				var key = keyevent.key;
-				if(key.length === 1 || key === "Backspace")
+				if(key.length === 1 || key === "Backspace" || key === "Enter")
 				{
 					UIHandler.handle_keydown(key);
 				}
@@ -323,3 +323,14 @@ function KeyNotFoundError(message)
 }
 
 KeyNotFoundError.prototype = Error.prototype;
+
+function normalize_number_string(string)
+{
+	var number = Number(string);
+	if(number)
+	{
+		// we trim off the excess leading 0s
+		return number.toString();
+	}
+	return string;
+}

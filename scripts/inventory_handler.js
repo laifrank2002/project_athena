@@ -72,6 +72,7 @@ var Inventory_handler = (
 				
 				var buyTextField = new UITextField(150,25);
 				buyTextField.setText("0");
+				buyTextField.onenter = function(){this.setText(normalize_number_string(this.text))};
 				display.addSubElement(buyTextField,600,10);
 				
 				var buyButton = new UIButton(75,25,"Buy");
@@ -79,6 +80,7 @@ var Inventory_handler = (
 				// Check if IS valid number from text
 				buyButton.onmouseclick = () =>
 				{
+					buyTextField.setText(normalize_number_string(buyTextField.getText()));
 					var text = buyTextField.getText();
 					// we try to parse num ONLY if it is valid.
 					// Number is a good choice here as it fails is there is string characters in text
@@ -93,11 +95,13 @@ var Inventory_handler = (
 				
 				var sellTextField = new UITextField(150,25);
 				sellTextField.setText("0");
+				sellTextField.onenter = function(){this.setText(normalize_number_string(this.text))};
 				display.addSubElement(sellTextField,600,60);
 				
 				var sellButton = new UIButton(75,25,"Sell");
 				sellButton.onmouseclick = () =>
 				{
+					sellTextField.setText(normalize_number_string(sellTextField.getText()));
 					var text = sellTextField.getText();
 					// we try to parse num ONLY if it is valid.
 					// Number is a good choice here as it fails is there is string characters in text
@@ -129,7 +133,7 @@ var Inventory_handler = (
 					var item = inventory.get_item(key);
 					var display = displays[key];
 					display.average_price.setText(`Bought for : ${Currency_converter.displayFull(item.average_price)}`);
-					display.stock.setText(`Stock: ${item.count.toLocaleString()} units`);
+					display.stock.setText(`Stock: ${item.amount.toLocaleString()} units`);
 				}
 			},
 			
@@ -155,7 +159,7 @@ var Inventory_handler = (
 			{
 				if(!inventory) return false;
 
-				var item_amount = inventory.get_item(name).count;
+				var item_amount = inventory.get_item(name).amount;
 				if(item_amount > amount)
 				{
 					item_amount = amount;
