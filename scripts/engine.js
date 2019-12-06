@@ -315,3 +315,11 @@ function create_image(path)
 
 	return image;
 }
+
+function KeyNotFoundError(message)
+{
+	Error.call(this,message);
+	this.name = "KeyNotFoundError";
+}
+
+KeyNotFoundError.prototype = Error.prototype;

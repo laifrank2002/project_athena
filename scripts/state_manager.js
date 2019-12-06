@@ -134,13 +134,30 @@ var State_manager = (
 			export_data: function()
 			{
 				Engine.log("Stringifying data for pasta... ");
-				return JSON.stringify(data);
+				try 
+				{
+					return JSON.stringify(data);
+				}
+				catch(exception)
+				{
+					Engine.log(`Unable to stringify data, exception: ${exception.message}`);
+				}
 			},
 			
 			import_data: function(data_string)
 			{
+				var imported_data;
+				
 				Engine.log("Importing pasta...");
-				var imported_data = JSON.parse(data_string);
+				
+				try 
+				{
+					imported_data = JSON.parse(data_string);
+				}
+				catch(exception)
+				{
+					Engine.log(`Unable to parse data, exception: ${exception.message}`);
+				}
 				
 				for(var key in imported_data)
 				{

@@ -156,7 +156,7 @@ function City(city_key)
 	// each warehouse only adds to this blank inventory
 	this.warehouse = new Inventory(0);
 	// city's inventory
-	this.market = new Market(city_key);
+	this.market = new Economy(city_key);
 	
 	// owned properties 
 	this.real_estate = [];

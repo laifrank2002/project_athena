@@ -37,9 +37,9 @@ var Inventory_handler = (
 				item_display_panel = new UIPanel(null,null,panel.width,panel.height);
 				
 				var display_count = 0;
-				for(var key in items)
+				for(var key in Item.prototype.items)
 				{
-					var item = items[key];
+					var item = Item.prototype.items[key];
 					item_display_panel.addSubElement(Inventory_handler.create_item_display(item,key)
 						,0
 						,DISPLAY_HEIGHT * display_count);
