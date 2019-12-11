@@ -299,13 +299,7 @@ var Industry_handler = (
 			
 			tick: function()
 			{
-				current_map.tick();
-				// get producers 
-				var producers = current_map.getProducers();
-				for(var key in producers)
-				{
-					
-				}
+				//current_map.tick();
 				// it turned out that with the amount of computations that we have to do, it is more efficient to update per tick than to update per transaction.
 				Inventory_handler.update();
 			},

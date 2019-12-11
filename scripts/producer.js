@@ -1,7 +1,7 @@
 /**
 	Takes some input and creates something out of it.
  */
-function Producer(type_key)
+function Producer(type_key, production_option = 0)
 {
 	if(!this.types[type_key])
 	{
@@ -13,8 +13,8 @@ function Producer(type_key)
 	this.type_key = type_key;
 	this.type = this.types[type_key];
 	this.image = Engine.assets[this.type.image];
-	this.productivity = 1;
-	this.production_option = Object.keys(this.type.production)[0];
+	this.productivity = this.type.productivity;
+	this.recipe = this.type.production[production_option];
 }
 
 Producer.prototype = Object.create(MapObject.prototype);
@@ -30,13 +30,9 @@ Producer.prototype.types = {
 		height: 1,
 		image: "spinster",
 		icon: "spinster",
-		// different options of production
-		production: {
-			"thread1": {name: "Cotton -> Cotton Thread"
-			,rate: 0.15
-			,input: {"cotton":1}
-			,output: {"cotton_thread":2}},
-		},
+		// different options of production with recipes 
+		production: ["thread"],
+		productivity: 0.15,
 		price: 0,
 		upkeep: 18,
 		type: "human",
@@ -51,12 +47,8 @@ Producer.prototype.types = {
 		height: 1,
 		image: "weaver",
 		icon: "weaver",
-		production: {
-			"cloth1": {name: "Cotton Thread -> Cotton Cloth"
-			,rate: 0.06
-			,input: {"cotton_thread":1}
-			,output: {"cotton_cloth":1}},
-		},
+		production: ["cloth"],
+		productivity: 0.06,
 		price: 0,
 		upkeep: 31,
 		type: "human",
@@ -69,18 +61,35 @@ Producer.prototype.types = {
 		height: 1,
 		image: "tanner",
 		icon: "tanner_icon",
-		production: {
-			"leather1": {name: "Hides -> Leather"
-			,rate: 0.04
-			,input: {"hides":1}
-			,output: {"leather":1}},
-		},
+		production: ["leather"],
+		productivity: 0.04,
 		price: 0,
 		upkeep: 31,
 		type: "human",
 		skill: "skilled",
 		description: "Strong, tough, and covered in tannins. 31d/day",
 	}
+}
+
+Producer.prototype.recipes = {
+	"thread": 
+	{
+		name: "Cotton -> Cotton Thread",
+		input: {"cotton":1},
+		output: {"cotton_thread":2},
+	},
+	"cloth": 
+	{
+		name: "Cotton Thread -> Cotton Cloth",
+		input: {"cotton_thread":1},
+		output: {"cotton_cloth":1},
+	},
+	"leather": 
+	{
+		name: "Hides -> Leather",
+		input: {"hides":1},
+		output: {"leather":1},
+	},
 }
 
 Producer.prototype.ANIMATION_COOLDOWN = 1000;
@@ -107,41 +116,53 @@ Producer.prototype.draw = function(context,x,y)
 	DEPRECATE BY CENTRALIZING THROUGH CATEGORIES IN Industry_handler
 	ALSO PRODUCTION OPTIONS
  */
+/*
 Producer.prototype.tick = function()
 {
 	// get time of day 
 	if(Time_handler.get_day_stage() === "night") return;
 	// production
-	var production = this.type.production[this.production_option];
-	var rate = production.rate;
+	var production = this.lookupRecipe(this.recipe);
 	
 	// limit rate based on availible inputs
-	var limited_throughput_rate = this.productivity;
+	var productivity = this.productivity;
+	var limited_throughput_rate = productivity;
 	for(key in production.input)
 	{
 		// or, if autobuy is on...
-		if(Inventory_handler.inventory.get_item(key).amount < production.input[key] * rate)
+		if(Inventory_handler.inventory.get_item(key).amount < production.input[key] * productivity)
 		{
 			if(Industry_handler.settings.autobuy)
 			{
-				var missing_amount = production.input[key] * rate - Inventory_handler.inventory.get_item(key).amount;
+				var missing_amount = production.input[key] * productivity - Inventory_handler.inventory.get_item(key).amount;
 				Inventory_handler.buy_item(key, missing_amount, Inventory_handler.inventory.get_item(key).price);
 			}
 		}
 		
-		limited_throughput_rate = Math.min(limited_throughput_rate,Inventory_handler.inventory.get_item(key).amount / (production.input[key] * rate))
+		limited_throughput_rate = Math.min(limited_throughput_rate,Inventory_handler.inventory.get_item(key).amount / (production.input[key] * productivity))
 	}
-	rate = rate * limited_throughput_rate;
 	
 	// now start subtracting
 	for(key in production.input)
 	{
-		Inventory_handler.inventory.add_amount(key,-production.input[key] * rate);
+		Inventory_handler.inventory.add_amount(key,-production.input[key] * limited_throughput_rate);
 	}
 	
 	// and then producing!
 	for(key in production.output)
 	{
-		Inventory_handler.inventory.add_amount(key,production.output[key] * rate);
+		Inventory_handler.inventory.add_amount(key,production.output[key] * limited_throughput_rate);
 	}
+}
+
+*/
+
+Producer.prototype.lookupRecipe = function(key)
+{
+	return Producer.prototype.recipes[key];
+}
+
+Producer.prototype.lookupType = function(key)
+{
+	return Producer.prototype.types[key];
 }

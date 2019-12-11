@@ -20,27 +20,10 @@ function Map(width,height)
 	{
 		this.tiles.push(new Tile(index % width, Math.floor(index / width)));
 	}
-	/*
-	this.tiles.forEach(tile => 
-		{
-			var x = tile.x;
-			var y = tile.y;
-			// north 
-			if(y < this.height - 1) tile.neighbours.north = this.getTile(x,y + 1);
-			// south 
-			if(y > 0) tile.neighbours.south = this.getTile(x,y - 1);
-			// east 
-			if(x < this.width - 1) tile.neighbours.east = this.getTile(x + 1,y);
-			// west 
-			if(x > 0) tile.neighbours.west = this.getTile(x - 1,y);
-		}
-	);
-	*/
 	
 	this.objects = [];
 	
 	// non-generic
-	this.producers = {};
 	this.initialize();
 }
 
@@ -55,28 +38,7 @@ Map.prototype.TILE_HEIGHT = 32;
  */
 Map.prototype.initialize = function()
 {
-	var producers = Producer.prototype.types;
-	for(var key in producers)
-	{
-		var producer = this.producers[key];
-		if(producer)
-		{
-			// add other properties
-			// TODO
-		}
-		else 
-		{
-			this.producers[key] = {count:0, options:{}};
-			
-			var productions = Producer.prototype.types[key].production;
-			
-			for(var option in productions)
-			{
-				this.producers[key].options[option] = {count: 0};
-				//production[option];
-			}
-		}
-	}
+	
 }
 
 Map.prototype.draw = function(context,x=0,y=0)

@@ -90,7 +90,9 @@ var Time_handler = (
 							State_manager.add_state("world","time",1);
 
 							// tick everything else 
-							Industry_handler.tick();
+							var time = State_manager.get_state("world","time");
+							City_handler.tick(time);
+							Industry_handler.tick(time);
 							
 							// handle the day 
 							if(Time_handler.get_hour() === 0)

@@ -1,46 +1,12 @@
 /**
 	Economy handler
- */
-
-/**
 	Handles the economic aspects of a city, decision making, etc.
- */
- 
-/**
-	Economys, which conform to prices using supply and demand.
-	Not only that, but it also handles money!
  */
 function Economy(city_key)
 {
 	Inventory.call(this,null,true); // an infinite inventory!
 	this.city_key = city_key;
 	this.money = Economy.prototype.DEFAULT_MONEY * (1+Math.random());
-	
-	for (var key in this.items)
-	{
-		var demand_and_supply = Defined_cities[this.city_key].demand_and_supply[key];
-		if(demand_and_supply)
-		{
-			var ie = demand_and_supply.initial_equilibrium;
-			var zpd = demand_and_supply.zero_price_demanded;
-			
-			var item = this.items[key];
-			
-			item.buyable = true;
-			item.demand = new Line((ie.y - zpd.y) / (ie.x - zpd.x),zpd.y);
-			item.supply = new Line((ie.y) / (ie.x),0);
-			item.price = ie.x;
-			
-			item.sold_weekly = 0;
-			item.sold_total = 0;
-			item.bought_weekly = 0;
-			item.bought_total = 0;
-		}
-		else 
-		{
-			this.items[key].buyable = false;
-		}
-	}
 }
 
 Economy.prototype = Object.create(Inventory.prototype);
@@ -66,15 +32,7 @@ Economy.prototype.close_day = function(day)
 
 Economy.prototype.close_week = function(week)
 {
-	// remove and or add some goods to simulate consumption and production
-	for (var key in this.items)
-	{
-		if(this.items[key].buyable)
-		{
-			this.items[key].sold_weekly = 0;
-			this.items[key].bought_weekly = 0;
-		}
-	}
+	
 }
 
 /**
@@ -82,12 +40,12 @@ Economy.prototype.close_week = function(week)
 	Holds the two lines of DEMAND and SUPPLY
 	Uses those systems to determine price and what it would cost 
 	To buy any amount of anything.
+	To which conform to prices using supply and demand.
+	Not only that, but it also handles money!
  */
-function Market(key, demand_and_supply)
+function Market(key)
 {
 	Item.call(this,key);
-	
-	if(!demand_and_supply) this.buyable = false;
 	
 	var ie = demand_and_supply.initial_equilibrium;
 	var zpd = demand_and_supply.zero_price_demanded;
@@ -103,16 +61,37 @@ function Market(key, demand_and_supply)
 	this.bought_total = 0;
 }
 
-Market.prototype = Object.create(Inventory.prototype);
-Object.defineProperty(Market.prototype, 'constructor', {
-	value: Market,
+Market.prototype = Object.create(Item.prototype);
+Object.defineProperty(Item.prototype, 'constructor', {
+	value: Item,
 	enumerable: false, // so that it does not appear in 'for in' loop
     writable: true });
 
+Market.prototype.BUYING_SELLING_PRICE_DIFFERENCE = 0.1;	
+
+Market.prototype.recalculate_price = function()
+{
+	Engine.log(this.price);
+	this.price = this.demand.get_intersection(this.supply).x;
+}
+	
 Market.prototype.reset_weekly_stats = function()
 {
 	this.sold_weekly = 0;
 	this.bought_weekly = 0;
+}
+
+/**
+	Demand and Supply
+ */
+function Demand()
+{
+	
+}
+
+function Supply()
+{
+	
 }
 
 /*

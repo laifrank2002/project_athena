@@ -118,6 +118,14 @@ var City_handler = (
 				}
 			},
 			
+			tick: function(time)
+			{
+				for(var key in cities)
+				{
+					cities[key].tick(time);
+				}
+			},
+			
 			close_day: function(day)
 			{
 				for(var key in cities)
@@ -156,7 +164,7 @@ function City(city_key)
 	// each warehouse only adds to this blank inventory
 	this.warehouse = new Inventory(0);
 	// city's inventory
-	this.market = new Economy(city_key);
+	this.economy = new Economy(city_key);
 	
 	// owned properties 
 	this.real_estate = [];
@@ -172,16 +180,23 @@ function City(city_key)
 	this.locations = city.locations;
 }
 
+City.prototype.tick = function(time)
+{
+	for(var index = 0; index < this.real_estate.length; index++)
+	{
+		this.real_estate[index].tick(time,this.warehouse);
+	}
+}
+
 City.prototype.close_day = function(day)
 {
-	
 	//this.market.close_day(day);
 }
 
 City.prototype.close_week = function(week)
 {
 	this.population *= Math.pow(Math.E,this.city.growth_rate*(1/Time_converter.AVERAGE_WEEKS_PER_YEAR));
-	this.market.close_week(week);
+	this.economy.close_week(week);
 }
 
 /**
@@ -297,3 +312,8 @@ Real_estate.prototype.buildings = {
 		"capacity": 10000,
 	},
 };
+
+Real_estate.prototype.tick = function(time,inventory)
+{
+	if(this.factory) this.factory.tick(time,inventory);
+}

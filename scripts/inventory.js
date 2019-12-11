@@ -89,6 +89,18 @@ Inventory.prototype.get_item = function(key)
 	}
 }
 
+Inventory.prototype.get_amount = function(key)
+{
+	if(this.items[key])
+	{
+		return this.items[key].amount;
+	}
+	else 
+	{
+		Engine.log(`Inventory.get_amount: item ${key} doesn't exist.`);
+	}
+}
+
 Inventory.prototype.get_total_value = function()
 {
 	var total_value = 0;
