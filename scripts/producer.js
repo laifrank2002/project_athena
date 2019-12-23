@@ -57,6 +57,21 @@ Producer.prototype.types = {
 		description: "How many weaves can a weaver weave if a weaver could weave wool? 31d/day",
 		palette: true,
 	},
+	"tailor": {
+		name: "Tailor",
+		width: 2,
+		height: 1,
+		image: "tailor",
+		icon: "tailor_icon",
+		production: ["cotton_shirt"],
+		productivity: 0.25, // let's say... 1/4 hours
+		price: 0,
+		upkeep: 26, // I know! But it's those darn weavers that are bloody expensive.
+		type: "human",
+		skill: "skilled",
+		description: "They don't just sew, they cut as well! 26d/day",
+		palette: true,
+	},
 	"tanner": {
 		name: "Tanner",
 		width: 2,
@@ -71,9 +86,7 @@ Producer.prototype.types = {
 		skill: "skilled",
 		description: "Strong, tough, and covered in tannins. 31d/day",
 		palette: false,
-	}
-	
-	// tailor: 26
+	}	
 }
 
 Producer.prototype.recipes = {

@@ -14,6 +14,7 @@ var images = {
 	"resource_cotton": create_image("assets/resource_cotton.png"),
 	"resource_cotton_cloth": create_image("assets/resource_cotton_cloth.png"),
 	"resource_cotton_thread": create_image("assets/resource_cotton_thread.png"),
+	"resource_cotton_shirt": create_image("assets/resource_cotton_shirt.png"),
 	"resource_hides": create_image("assets/resource_hides.png"),
 	"resource_leather": create_image("assets/resource_leather.png"),
 	

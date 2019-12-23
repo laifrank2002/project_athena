@@ -175,7 +175,7 @@ Item.prototype.items = {
 		"category": "shirt",
 		"market_value": 60,
 		"annual_demand_per_pop":2, 
-		"icon": "resource_cotton",
+		"icon": "resource_cotton_shirt",
 	},
 	"hides": {
 		"name": "Hides",
