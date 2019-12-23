@@ -438,23 +438,8 @@ Object.defineProperty(UILabel.prototype, 'constructor', {
 UILabel.prototype.draw = function(context)
 {
 	if(this.hidden) return false;
-	
-	context.font = this.font_size + "px " + this.font;
-	var textMetric = context.measureText(this.text);
 	context.fillStyle = this.font_colour;
-
-	switch(this.text_align)
-	{
-		case "left":
-			// draw text and left
-			context.fillText(this.text,this.x,this.y + this.font_size);
-			break;
-		case "center":
-		default:
-			// draw text from center
-			context.fillText(this.text,this.x - textMetric.width/2,this.y + this.font_size/2);
-	}
-	
+	UIDrawer.draw_text(context,this.text,this.x,this.y,this.text_align,this.font,this.font_size);
 }
 
 UILabel.prototype.setText = function(text)
@@ -1272,6 +1257,87 @@ UITextField.prototype.type_character = function(character)
 	if(this.onkeytyped) this.onkeytyped(character); 
 }
 
+/**
+	A pure TEXT table to speed up processing.
+	There are no elements within; why the hell do you need things in Tables? That's LAYOUT, and that shouldn't be done using a frickin' table!
+	Will have no children.
+ */
+function UITable(width, height, rows = 1, columns = 1)
+{
+	UIElement.call(this,null,null,width,height,"table");
+	this.cells = [];
+	for(var index = 0; index < rows * columns; index++)
+	{
+		this.cells.push("BLANK");
+	}
+	this.rows = rows;
+	this.columns = columns;
+	
+	this.cell_width = this.width / this.columns;
+	this.cell_height = this.height / this.rows;
+}
+
+UITable.prototype = Object.create(UIElement.prototype);
+Object.defineProperty(UITable.prototype, 'constructor', {
+	value: UITable,
+	enumerable: false, // so that it does not appear in 'for in' loop
+    writable: true });
+	
+UITable.prototype.margin = 5;	
+	
+UITable.prototype.draw = function(context)
+{
+	if(this.hidden) return false;
+	UIElement.prototype.draw.call(this,context);
+	
+	for(var index = 0; index < this.rows * this.columns; index++)
+	{
+		context.beginPath();
+		var x = this.x + (index%this.columns)*this.cell_width;
+		var y = this.y + Math.floor(index/this.columns)*this.cell_height;
+		
+		context.rect(x,y,this.cell_width,this.cell_height);
+		context.fillStyle = this.font_colour;
+		UIDrawer.draw_text(context,this.cells[index],x+this.cell_width - this.margin,y+this.cell_height/2,"right_center",this.font,this.font_size);
+		context.fillStyle = this.darker_colour;
+		context.stroke();
+	}
+}
+
+UITable.prototype.resize = function(width,height)
+{
+	UIElement.prototype.resize.call(this,width,height);
+	this.cell_width = this.width / this.columns;
+	this.cell_height = this.height / this.rows;
+}
+
+UITable.prototype.get_position = function(x,y)
+{
+	return y * this.columns + x;
+}
+
+UITable.prototype.get_cell = function(x,y)
+{
+	return this.cells[this.get_position(x,y)];
+}
+
+UITable.prototype.set_cell = function(text, x, y)
+{
+	this.cells[this.get_position(x,y)] = text;
+}
+
+UITable.prototype.add_row = function(rowText)
+{
+	for(var column = 0; column < this.columns; column++)
+	{
+		var text = "";
+		if(rowText && rowText[column]) text = rowText[column];
+		this.cells.push(text); 
+	}
+	this.rows++;
+	this.resize(this.width,this.height);
+}
+
 // UI Drawer, which handles away all the common features to be drawn in terms of UI
 // this helps simplify the amount of 'context.lineTo()'s that we'll have to do
 var UIDrawer = (
@@ -1343,6 +1409,34 @@ var UIDrawer = (
 						break;
 					default:
 						Engine.log("UIDrawer: invalid border direction. The directions are top, bottom, left, right.");
+				}
+			},
+			
+			// draw text
+			// directions: left, right, n' center (default)
+			draw_text: function(context,text,x,y,align = "center",font = UIElement.prototype.font,font_size = UIElement.prototype.font_size)
+			{
+				context.font = font_size + "px " + font;
+				var textMetric = context.measureText(text);
+				
+				switch(align)
+				{
+						case "left":
+							context.fillText(text,x,y+font_size);
+							break;
+						case "right":
+							context.fillText(text,x-textMetric.width,y+font_size);
+							break;
+						case "left_center":
+							context.fillText(text,x,y+font_size/2);
+							break;
+						case "right_center":
+							context.fillText(text,x-textMetric.width,y+font_size/2);
+							break;
+						case "center": 
+						default:
+							context.fillText(text,x-textMetric.width/2,y+font_size/2);
+							break;
 				}
 			},
 		}
