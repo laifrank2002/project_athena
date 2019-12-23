@@ -150,58 +150,79 @@ function Item(key)
 Item.prototype.items = {
 	"cotton": {
 		"name": "Cotton",
+		"type": "raw",
+		"category": "raw_material",
 		"market_value": 2,
 		"icon": "resource_cotton",
 	},
 	"cotton_cloth": {
 		"name": "Cotton Cloth",
+		"type": "processed",
+		"category": "tailoring_supplies",
 		"market_value": 12,
 		"icon": "resource_cotton_cloth",
 	},
 	"cotton_thread": {
 		"name": "Cotton Thread",
+		"type": "processed",
+		"category": "tailoring_supplies",
 		"market_value": 8,
 		"icon": "resource_cotton_thread",
 	},
-	
+	"cotton_shirt": { // based off of petticoat cost at 4s/6d
+		"name": "Cotton Shirt",
+		"type": "manufactured",
+		"category": "shirt",
+		"market_value": 60,
+		"annual_demand_per_pop":2, 
+		"icon": "resource_cotton",
+	},
+	"hides": {
+		"name": "Hides",
+		"type": "raw",
+		"market_value": 18,
+		"icon": "resource_hides",
+	},
+	"leather": {
+		"name": "Leather",
+		"type": "processed",
+		"market_value": 28,
+		"icon": "resource_leather",
+	},
 	"flax": {
 		"name": "Flax",
+		"type": "raw",
 		"market_value": 2,
 		"icon": "resource_cotton",
 	},
 	"linen_thread": {
 		"name": "Linen Thread",
+		"type": "processed",
 		"market_value": 8,
 		"icon": "resource_cotton",
 	},
 	"linens": {
 		"name": "Linens",
+		"type": "processed",
 		"market_value": 10,
 		"icon": "resource_cotton",
 	},
 	"velvet": {
 		"name": "Velvet",
+		"type": "processed",
 		"market_value": 38,
 		"icon": "resource_cotton",
 	},
 	"wool": {
 		"name": "Wool",
+		"type": "raw",
 		"market_value": 2,
 		"icon": "resource_cotton",
 	},
 	"yarn": {
 		"name": "Yarn",
+		"type": "processed",
 		"market_value": 8,
-		"icon": "resource_cotton",
-	},
-	"hides": {
-		"name": "Hides",
-		"market_value": 18,
-		"icon": "resource_cotton",
-	},
-	"leather": {
-		"name": "Leather",
-		"market_value": 28,
 		"icon": "resource_cotton",
 	},	
 }

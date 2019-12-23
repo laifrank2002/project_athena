@@ -95,10 +95,12 @@ var Industry_handler = (
 				
 				palette = new UIPanel(null,null,400,toolbar.height);
 				// adding all of the buttons for the palette 
-				palette_list = ["spinster","weaver","tanner"];
+				palette_list = Object.keys(Producer.prototype.types);
 				for(var index = 0; index < palette_list.length; index++)
 				{
 					var producer = Producer.prototype.types[palette_list[index]];
+					// for testing, skip those ones
+					if(!producer.palette) continue;
 					var icon_button = new UIButton(25,25,"");
 					icon_button.icon = Engine.assets[producer.icon];
 					icon_button.producer = producer;

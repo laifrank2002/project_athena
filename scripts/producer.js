@@ -31,13 +31,14 @@ Producer.prototype.types = {
 		image: "spinster",
 		icon: "spinster",
 		// different options of production with recipes 
-		production: ["thread"],
+		production: ["cotton_thread"],
 		productivity: 0.15,
 		price: 0,
 		upkeep: 18,
 		type: "human",
 		skill: "skilled",
 		description: "A humble spinster to turn fiber into thread. 18d/day",
+		palette: true,
 	},
 	// RR(Research Confirmed)
 	// weaver: 0.67 cloth per day
@@ -47,13 +48,14 @@ Producer.prototype.types = {
 		height: 1,
 		image: "weaver",
 		icon: "weaver",
-		production: ["cloth"],
+		production: ["cotton_cloth"],
 		productivity: 0.06,
 		price: 0,
 		upkeep: 31,
 		type: "human",
 		skill: "skilled",
 		description: "How many weaves can a weaver weave if a weaver could weave wool? 31d/day",
+		palette: true,
 	},
 	"tanner": {
 		name: "Tanner",
@@ -68,21 +70,30 @@ Producer.prototype.types = {
 		type: "human",
 		skill: "skilled",
 		description: "Strong, tough, and covered in tannins. 31d/day",
+		palette: false,
 	}
+	
+	// tailor: 26
 }
 
 Producer.prototype.recipes = {
-	"thread": 
+	"cotton_thread": 
 	{
 		name: "Cotton -> Cotton Thread",
 		input: {"cotton":1},
 		output: {"cotton_thread":2},
 	},
-	"cloth": 
+	"cotton_cloth": 
 	{
 		name: "Cotton Thread -> Cotton Cloth",
 		input: {"cotton_thread":1},
 		output: {"cotton_cloth":1},
+	},
+	"cotton_shirt":
+	{
+		name: "Cotton Cloth -> Cotton Shirt",
+		input: {"cotton_cloth":4.6},
+		output: {"cotton_shirt":1},
 	},
 	"leather": 
 	{
@@ -110,52 +121,6 @@ Producer.prototype.draw = function(context,x,y)
 		}
 	}
 }
-
-/*
-	TODO
-	DEPRECATE BY CENTRALIZING THROUGH CATEGORIES IN Industry_handler
-	ALSO PRODUCTION OPTIONS
- */
-/*
-Producer.prototype.tick = function()
-{
-	// get time of day 
-	if(Time_handler.get_day_stage() === "night") return;
-	// production
-	var production = this.lookupRecipe(this.recipe);
-	
-	// limit rate based on availible inputs
-	var productivity = this.productivity;
-	var limited_throughput_rate = productivity;
-	for(key in production.input)
-	{
-		// or, if autobuy is on...
-		if(Inventory_handler.inventory.get_item(key).amount < production.input[key] * productivity)
-		{
-			if(Industry_handler.settings.autobuy)
-			{
-				var missing_amount = production.input[key] * productivity - Inventory_handler.inventory.get_item(key).amount;
-				Inventory_handler.buy_item(key, missing_amount, Inventory_handler.inventory.get_item(key).price);
-			}
-		}
-		
-		limited_throughput_rate = Math.min(limited_throughput_rate,Inventory_handler.inventory.get_item(key).amount / (production.input[key] * productivity))
-	}
-	
-	// now start subtracting
-	for(key in production.input)
-	{
-		Inventory_handler.inventory.add_amount(key,-production.input[key] * limited_throughput_rate);
-	}
-	
-	// and then producing!
-	for(key in production.output)
-	{
-		Inventory_handler.inventory.add_amount(key,production.output[key] * limited_throughput_rate);
-	}
-}
-
-*/
 
 Producer.prototype.lookupRecipe = function(key)
 {
