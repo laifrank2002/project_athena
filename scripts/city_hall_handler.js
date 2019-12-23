@@ -18,6 +18,9 @@ var City_hall_handler = (
 			statistics_panel: null,
 			statistics_title: null,
 			statistics_population: null,
+			statistics_economy: null,
+			statistics_economy_goods: [],
+			
 		};
 		Object.assign(element, fields);
 		
@@ -28,7 +31,7 @@ var City_hall_handler = (
 				this.addSubElement(this.content);
 				
 				// statistics panel
-				this.statistics_panel = new UIScrollPanel(null,null,this.width,this.content.content_panel.height,1000);
+				this.statistics_panel = new UIScrollPanel(null,null,this.content_panel.width,this.content.content_panel.height,1000);
 				this.content.addSubPanel("Statistics",this.statistics_panel);
 				
 				this.statistics_title = new UILabel("Town Statistics","center");
@@ -36,6 +39,18 @@ var City_hall_handler = (
 				this.statistics_panel.addSubElement(this.statistics_title, this.statistics_panel.width/2, 50);
 				this.statistics_population = new UILabel("Population: ","left");
 				this.statistics_panel.addSubElement(this.statistics_population, 50, 75);
+				
+				this.statistics_economy = new UIPanel(null,null,this.statistics_panel.width - 50,500);
+				var top_y = 10;
+				for(var key in Item.prototype.items)
+				{
+					var display = new UILabel(`${Item.prototype.items[key]["name"]}: 0`,"left");
+					this.statistics_economy_goods.push({key: key, display: display});
+					this.statistics_economy.addSubElement(display, 10, top_y);
+					top_y += 25;
+				}
+				this.statistics_panel.addSubElement(this.statistics_economy,10,125);
+				console.log(this.statistics_economy);
 			},
 			
 			onshow: function()
@@ -52,6 +67,8 @@ var City_hall_handler = (
 				
 				// also updates statistics
 				this.statistics_population.setText(`Population: ${Math.floor(current_city.population)}`);
+				
+				this.statistics_economy_goods.forEach(goods_display => goods_display.display.setText(`${Item.prototype.items[goods_display.key]["name"]}: ${current_city.economy.get_amount(goods_display.key)}`));
 			},
 			
 			close_day: function(day)

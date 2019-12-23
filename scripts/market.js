@@ -7,6 +7,8 @@ function Economy(city_key)
 	Inventory.call(this,null,true); // an infinite inventory!
 	this.city_key = city_key;
 	this.money = Economy.prototype.DEFAULT_MONEY * (1+Math.random());
+	
+	this.imports = Defined_cities[city_key].imports;
 }
 
 Economy.prototype = Object.create(Inventory.prototype);
@@ -32,7 +34,13 @@ Economy.prototype.close_day = function(day)
 
 Economy.prototype.close_week = function(week)
 {
-	
+	// handle imports 
+	// cities CAN have negative money, so we won't deal with this for now.
+	for(var index = 0; index < this.imports.length; index++)
+	{
+		this.money -= this.imports[index].count * this.imports[index].price;
+		this.add_amount(this.imports[index].key, this.imports[index].amount, this.imports[index].price);
+	}
 }
 
 /**

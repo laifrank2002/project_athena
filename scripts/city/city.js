@@ -66,6 +66,14 @@ var Defined_cities = {
 		locations: ["city_hall","properties","money_lender","real_estate_agent","market","port"],
 		prebuilt_realestate:["small_mill_a"],
 		
+		// imports per week.
+		imports: [
+			{
+				key: "cotton",
+				amount: 10000,
+				price: 2,
+			},
+		],
 		/*
 		// demand and supply per WEEK.
 		// 3.6 thread per spinster per day 
