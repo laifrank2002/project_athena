@@ -36,8 +36,8 @@ var State_manager = (
 			initialize: function()
 			{
 				/* takes the categories and initializes them */
-				data["player"] = Player;
-				data["world"] = World;
+				data["player"] = {};
+				data["world"] = {};
 				
 				// temp until saving and loading is figured out 
 				State_manager.start_new_game();
@@ -65,7 +65,6 @@ var State_manager = (
 					,factory: data["world"].cities[STARTING_CITY].real_estate[0].factory
 					,credit_rating: "NR"
 					,loaned_amount: 0};
-				Player.load(data);
 				
 				data["history"] = {finance: null};
 				data["settings"] = {industry:{autobuy:true}};
@@ -186,27 +185,15 @@ var State_manager = (
  */
 var World = {
 	cities: {},
+	firms: {},
 	time: 0,
 };
 
 /**
 	The player is, well, the player.
+	A necessary evil in making our lives easier. It's a PSEUDO object.
  */
 var Player = {
-	name: null,
-	city: null,
-	factory: null,
-	money: 0,
-	credit_rating: "NR",
-	loaned_amount: 0,
-	
-	load: function(data)
-	{
-		this.name = data.player.name;
-		this.city = data.player.city;
-		this.factory = data.player.factory;
-		this.money = data.player.money;
-		this.credit_rating = data.player.credit_rating;
-		this.loaned_amount = data.player.loaned_amount;
-	},
+	get money() { return State_manager.get_state("player","money") },
+	set money(value) { State_manager.set_state("player","money",value) },
 };

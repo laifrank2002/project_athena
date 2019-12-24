@@ -27,7 +27,7 @@ function Factory(map_name)
 	// actual data;
 	this.producers = {};
 	
-	this.auto_buy = true;
+	this.settings = {autobuy:true};
 	
 	for(var key in Producer.prototype.types)
 	{
@@ -149,7 +149,7 @@ Factory.prototype.removeProducer = function(type,option)
 	return true;
 }
 
-Factory.prototype.tick = function(time, inventory)
+Factory.prototype.tick = function(time, city, inventory)
 {
 	//this.objects.forEach(object => object.tick());
 	// get time of day 
@@ -173,9 +173,10 @@ Factory.prototype.tick = function(time, inventory)
 			// naive sum (FOR NOW!)
 			var productivity = recipe.count * type.productivity;
 			
+			// try autobuy 
+			if(this.settings["autobuy"]) this.autobuy(Player,city.economy,inventory,production,productivity);
+			// and produce!
 			var limited_throughput_rate = this.produce(inventory, production, productivity);
-			
-			Engine.log(limited_throughput_rate);
 		}
 	}
 }
@@ -190,7 +191,7 @@ Factory.prototype.produce = function(inventory, recipe, productivity)
 	for(var key in recipe.input)
 	{
 		// manual check 
-		limited_throughput_rate = Math.min(limited_throughput_rate, (inventory.get_amount(key) / (recipe.input[key] * productivity)) * productivity);
+		limited_throughput_rate = Math.min(limited_throughput_rate, inventory.get_amount(key) / recipe.input[key]);
 	}
 	
 	if(limited_throughput_rate <= 0) return 0;
@@ -206,4 +207,20 @@ Factory.prototype.produce = function(inventory, recipe, productivity)
 	}
 	
 	return limited_throughput_rate;
+}
+
+/**
+	Autobuy!
+ */
+Factory.prototype.autobuy = function(entity,market,inventory,recipe,productivity)
+{
+	for(var key in recipe.input)
+	{
+		// check if not enough
+		if(inventory.get_amount(key) < recipe.input[key] * productivity)
+		{
+			var missing_amount = recipe.input[key] * productivity - inventory.get_amount(key);
+			market.sell_item(key,entity,inventory,missing_amount,market.get_price(key));
+		}
+	}
 }

@@ -37,7 +37,7 @@ City.prototype.tick = function(time)
 {
 	for(var index = 0; index < this.real_estate.length; index++)
 	{
-		this.real_estate[index].tick(time,this.warehouse);
+		this.real_estate[index].tick(time,this,this.warehouse);
 	}
 }
 
@@ -50,6 +50,27 @@ City.prototype.close_week = function(week)
 {
 	this.population *= Math.pow(Math.E,this.city.growth_rate*(1/Time_converter.AVERAGE_WEEKS_PER_YEAR));
 	this.economy.close_week(week);
+}
+
+/**
+	attempts to buy some amount
+	transfers stuff from economy to inventory 
+	@param inventory - the other inventory to transfer to
+	@param wallet - the entity holding the money 
+ */
+City.prototype.buy_amount = function(amount)
+{
+	
+}
+/**
+	attempts to sell some amount 
+	transfers stuff from economy to inventory 
+	@param inventory - the other inventory to transfer to
+	@param wallet - the entity holding the money 
+ */
+City.prototype.sell_amount = function(amount)
+{
+	
 }
 
 /**
@@ -177,7 +198,7 @@ Real_estate.prototype.buildings = {
 	},
 };
 
-Real_estate.prototype.tick = function(time,inventory)
+Real_estate.prototype.tick = function(time,city,inventory)
 {
-	if(this.factory) this.factory.tick(time,inventory);
+	if(this.factory) this.factory.tick(time,city,inventory);
 }

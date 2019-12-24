@@ -40,41 +40,67 @@ Inventory.prototype.add_amount = function(key, amount, price = 0)
 {
 	var item = this.get_item(key);
 	
-	if(item)
-	{
-		var item_amount = amount;
-		
-		// determine how much to add  
-		if(!this.infinite_storage)
-		{
-			if(this.utilized_capacity >= this.capacity && amount > 0 && !this.infinite_storage)
-			{
-				item_amount = 0;
-			}
-			else if(this.utilized_capacity + amount > this.capacity && !this.infinite_storage)
-			{
-				item_amount = this.capacity - this.utilized_capacity;
-			}
-		}
-		
-		if(item_amount > 0)
-		{
-			item.add_amount(item_amount, price);
-		}
-		else if(item_amount < 0)
-		{
-			// we set it again if the actual amount added is less because it'll break a 'less than 0 rule
-			item_amount = -item.remove_amount(-item_amount, price);
-		}
-		this.utilized_capacity += item_amount;
-		
-		return item_amount;
-	}
-	else 
+	if(!item)
 	{
 		Engine.log(`Inventory.add_amount: item ${key} doesn't exist.`);
 		return 0;
 	}
+	
+	var item_amount = amount;
+	
+	// determine how much to add  
+	if(!this.infinite_storage)
+	{
+		if(this.utilized_capacity >= this.capacity && amount > 0 && !this.infinite_storage)
+		{
+			item_amount = 0;
+		}
+		else if(this.utilized_capacity + amount > this.capacity && !this.infinite_storage)
+		{
+			item_amount = this.capacity - this.utilized_capacity;
+		}
+	}
+	
+	if(item_amount > 0)
+	{
+		item.add_amount(item_amount, price);
+	}
+	else if(item_amount < 0)
+	{
+		// we set it again if the actual amount added is less because it'll break a 'less than 0 rule
+		item_amount = -item.remove_amount(-item_amount, price);
+	}
+	this.utilized_capacity += item_amount;
+	
+	return item_amount;
+	
+}
+
+// gives away as much as the other party can afford.
+// I can't believe this fricken works.
+Inventory.prototype.sell_item = function(key, entity, inventory, amount, price = 0)
+{
+	var item = this.get_item(key);
+	
+	if(!item)
+	{
+		Engine.log(`Inventory.add_amount: item ${key} doesn't exist.`);
+		return 0;
+	}
+	
+	var item_amount = amount;
+	// check enough 
+	if(item.amount < item_amount) item_amount = item.amount;
+	// check price 
+	if(entity.money < item_amount * item.price) item_amount = entity.money / item.price;
+	// then check storage. Only pay what you actualy buy.
+	item_amount = inventory.add_amount(key,item_amount,item.price);
+	this.add_amount(key,-item_amount,item.price);
+	
+	entity.money -= item_amount * item.price;
+	this.money += item_amount * item.price;
+	
+	return item_amount;
 }
 
 Inventory.prototype.get_item = function(key)
